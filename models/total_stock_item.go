@@ -12,7 +12,7 @@ type TotalStockItem struct {
 	ID           uint   `json:"id"` // gorm primary
 	SKU          string `json:"sku"`
 	Name         string `json:"name"`
-	CurrentStock uint   `json:"currentStock"`
+	CurrentStock int64  `json:"currentStock"`
 	// gorm model
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`

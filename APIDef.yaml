@@ -1,0 +1,206 @@
+swagger: '2.0'
+info:
+  description: This is an Inventory Service
+  version: 1.0.0
+  title: Inventory API
+  # put the contact info for your development or API team
+  contact:
+    email: mochadwi20@gmail.com
+
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+# tags are used for organizing operations
+tags:
+- name: developers
+  description: Operations available to regular developers
+
+paths:
+  /add/total/stock:
+    post:
+      tags:
+      - developers
+      summary: Adds a new total stock
+      operationId: addTotalStock
+      description: |
+        By passing in the appropriate params, you can add new total stock
+      consumes:
+      - application/json
+      parameters:
+        - in: body
+          name: totalstock
+          description: The requested total stock body.
+          schema:
+            $ref: '#/definitions/TotalStockRequest'
+      responses:
+        201:
+          description: total stock data created
+          schema:
+            $ref: '#/definitions/DefaultResponse'
+        400:
+          description: bad input parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  /total/stock:
+    get:
+      tags:
+      - developers
+      summary: Gets all total stock
+      operationId: getAllTotalStock
+      description: |
+        A detailed all of total stock
+      responses:
+        200:
+          description: total stock retrieved
+          schema:
+            $ref: '#/definitions/DefaultResponseArray'
+        404:
+          description: service unavailable
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  /total/stock/{sku}:
+    get:
+      tags:
+      - developers
+      summary: Gets a total stock by SKU
+      operationId: getTotalStockBySKU
+      description: |
+        Get the total stock for requested SKU        
+      responses:
+        200:
+          description: totaapi/l stock retrieved
+          schema:
+            $ref: '#/definitions/DefaultResponse'
+        404:
+          description: service unavailable
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+definitions:
+  ErrorResponse:
+    type: object
+    required:
+    - requestID
+    - now
+    - code
+    - message
+    properties:
+      requestID:
+        type: string
+        format: uuidv4
+        example: "02010ce8-6878-4547-b3c0-e5592086a802"
+      now:
+        type: integer
+        format: unix_timestamp
+        example: 1511859232
+      message:
+        type: string
+        example: "Duplicate entry"
+      code:
+        type: integer
+        example: 400
+        
+  DefaultResponseArray:
+    type: object
+    required:
+    - requestID
+    - now
+    - code
+    - message
+    - data
+    properties:
+      requestID:
+        type: string
+        format: uuidv4
+        example: "02010ce8-6878-4547-b3c0-e5592086a802"
+      now:
+        type: integer
+        format: unix_timestamp
+        example: 1511859232
+      message:
+        type: string
+        example: "OK"
+      code:
+        type: integer
+        example: 200
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/TotalStockItem'
+        
+  DefaultResponse:
+    type: object
+    required:
+    - requestID
+    - now
+    - code
+    - message
+    - data
+    properties:
+      requestID:
+        type: string
+        format: uuidv4
+        example: "02010ce8-6878-4547-b3c0-e5592086a802"
+      now:
+        type: integer
+        format: unix_timestamp
+        example: 1511859232
+      message:
+        type: string
+        example: "OK"
+      code:
+        type: integer
+        example: 200
+      data:
+        $ref: '#/definitions/TotalStockItem'
+        
+  TotalStockRequest:
+    type: object
+    properties:
+      name:
+        type: string
+        example: "Zalekia Plain Casual Blouse"
+      size:
+        type: string
+        enum: [L, M, XL, S, XXX, XXL]
+        example: "L"
+      colour:
+        type: string
+        enum: [Broken White, Red, Navy, Yellow, Salem, White, Khaki, Black]
+        example: "Broken White"
+      currentStock:
+        type: integer
+        example: 100
+
+  TotalStockItem:
+    type: object
+    properties:
+      sku:
+        type: string
+        example: "SSI-D00791015-LL-BWH"
+      name:
+        type: string
+        example: "Zalekia Plain Casual Blouse (L,Broken White)"
+      currentStock:
+        type: integer
+        example: 100
+      createdAt:
+        type: integer
+        format: unix_timestamp
+        example: 1511859232
+      updatedAt:
+        type: integer
+        format: unix_timestamp
+        example: 1511859233
+      deletedAt:
+        type: integer
+        format: unix_timestamp
+        example: 1511859233
+
+schemes:
+ - https
+host: localhost
+basePath: /api/v1/
