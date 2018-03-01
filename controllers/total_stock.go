@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	models "github.com/mochadwi/toko-ijah/models"
+	db "github.com/mochadwi/toko-ijah/utils"
 	utils "github.com/mochadwi/toko-ijah/utils"
 	index "github.com/mochadwi/toko-ijah/views"
 	uuid "github.com/satori/go.uuid"
@@ -19,30 +20,32 @@ func AddTotalStock(c *gin.Context) {
 	// "colour": "Broken White",
 	// "currentStock": 100
 
-	data := models.TotalStockItem{
+	totalStock := models.TotalStockItem{
 		SKU:          utils.GenerateSKU(c.PostForm("size"), c.PostForm("colour")),
-		Name:         utils.PrettifyName(c.PostForm("name"), c.PostForm("size"), c.PostForm("colour")),
+		Name:         c.PostForm("name"),
+		Size:         c.PostForm("size"),
+		Colour:       c.PostForm("colour"),
 		CurrentStock: utils.StrToInt(c.PostForm("currentStock"))}
 
-	fmt.Println(data)
+	fmt.Println(totalStock)
+
+	err := db.Mgr.AddTotalStock(&totalStock)
 
 	var response = &index.DefaultResponseFormat{
 		RequestID: uuid.NewV4().String(),
 		Now:       time.Now().Unix(),
 	}
 
-	// if data != nil {
-	response.Code = http.StatusOK
-	response.Message = "OK"
-	response.Data = data
+	if err != nil {
+		response.Code = http.StatusBadRequest
+		response.Message = err.Error()
 
-	c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusBadRequest, response)
+	} else {
+		response.Code = http.StatusCreated
+		response.Message = "OK"
+		response.Data = totalStock
 
-	// } else {
-	// 	response.Code = http.StatusBadRequest
-	// 	response.Message = "BAD"
-	// 	response.Data = nil
-
-	// 	c.JSON(http.StatusBadRequest, response)
-	// }
+		c.JSON(http.StatusCreated, response)
+	}
 }
