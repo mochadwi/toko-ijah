@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	models "github.com/mochadwi/toko-ijah/models"
-	db "github.com/mochadwi/toko-ijah/utils"
 	utils "github.com/mochadwi/toko-ijah/utils"
 	index "github.com/mochadwi/toko-ijah/views"
 	uuid "github.com/satori/go.uuid"
@@ -20,16 +19,19 @@ func AddTotalStock(c *gin.Context) {
 	// "colour": "Broken White",
 	// "currentStock": 100
 
-	totalStock := models.TotalStockItem{
+	stock := models.StockItem{
 		SKU:          utils.GenerateSKU(c.PostForm("size"), c.PostForm("colour")),
 		Name:         c.PostForm("name"),
-		Size:         c.PostForm("size"),
-		Colour:       c.PostForm("colour"),
 		CurrentStock: utils.StrToInt(c.PostForm("currentStock"))}
+
+	totalStock := models.TotalStockRequest{
+		StockItem: stock,
+		Size:      c.PostForm("size"),
+		Colour:    c.PostForm("colour")}
 
 	fmt.Println(totalStock)
 
-	err := db.Mgr.AddTotalStock(&totalStock)
+	err := utils.Mgr.AddTotalStock(&totalStock)
 
 	var response = &index.DefaultResponseFormat{
 		RequestID: uuid.NewV4().String(),
@@ -52,14 +54,14 @@ func AddTotalStock(c *gin.Context) {
 
 // GetAllTotalStock all available list
 func GetAllTotalStock(c *gin.Context) {
-	totalStock := []models.TotalStockItem{}
+	totalStock := []models.TotalStockRequest{}
 
 	var response = &index.DefaultResponseFormat{
 		RequestID: uuid.NewV4().String(),
 		Now:       time.Now().Unix(),
 	}
 
-	if err := db.Mgr.ShowAllTotalStock(&totalStock); err != nil {
+	if err := utils.Mgr.ShowAllTotalStock(&totalStock); err != nil {
 		response.Code = http.StatusNotFound
 		response.Message = err.Error()
 

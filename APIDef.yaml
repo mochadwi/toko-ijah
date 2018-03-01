@@ -57,7 +57,7 @@ paths:
           schema:
             $ref: '#/definitions/DefaultResponseArray'
         404:
-          description: service unavailable
+          description: data unavailable
           schema:
             $ref: '#/definitions/ErrorResponse'
 
@@ -76,6 +76,32 @@ paths:
             $ref: '#/definitions/DefaultResponse'
         404:
           description: service unavailable
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  /add/income/stock:
+    post:
+      tags:
+      - developers
+      summary: Adds a new income stock
+      operationId: addTotalStock
+      description: |
+        By passing in the appropriate params, you can add new income stock
+      consumes:
+      - application/json
+      parameters:
+        - in: body
+          name: incomestock
+          description: The requested income stock body.
+          schema:
+            $ref: '#/definitions/TotalStockRequest'
+      responses:
+        201:
+          description: income stock data created
+          schema:
+            $ref: '#/definitions/DefaultResponse'
+        400:
+          description: bad input parameters
           schema:
             $ref: '#/definitions/ErrorResponse'
 

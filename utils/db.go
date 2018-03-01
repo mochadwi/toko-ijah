@@ -11,9 +11,9 @@ import (
 
 // Manager interface
 type Manager interface {
-	AddTotalStock(totalStock *models.TotalStockItem) error
-	ShowAllTotalStock(totalStock *[]models.TotalStockItem) error
-	ShowTotalStock(name string, totalStock *models.TotalStockItem) error
+	AddTotalStock(totalStock *models.TotalStockRequest) error
+	ShowAllTotalStock(totalStock *[]models.TotalStockRequest) error
+	ShowTotalStock(name string, totalStock *models.TotalStockRequest) error
 }
 
 type manager struct {
@@ -34,13 +34,13 @@ func init() {
 	Mgr = &manager{db: db}
 
 	db.Debug().AutoMigrate(
-		&models.TotalStockItem{})
+		&models.TotalStockRequest{})
 }
 
-func (mgr *manager) AddTotalStock(totalStock *models.TotalStockItem) (err error) {
+func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
 
-	var tempTotalStock models.TotalStockItem
-	models.NewTotalStockItemQuerySet(mgr.db).NameEq(totalStock.Name).One(&tempTotalStock)
+	var tempTotalStock models.TotalStockRequest
+	models.NewTotalStockRequestQuerySet(mgr.db).NameEq(totalStock.Name).One(&tempTotalStock)
 
 	if tempTotalStock.Name != totalStock.Name {
 		// Create
@@ -61,8 +61,8 @@ func (mgr *manager) AddTotalStock(totalStock *models.TotalStockItem) (err error)
 	return fmt.Errorf("%s", "duplicate entry")
 }
 
-func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockItem) (err error) {
-	if err := models.NewTotalStockItemQuerySet(mgr.db).All(totalStock); err != nil {
+func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockRequest) (err error) {
+	if err := models.NewTotalStockRequestQuerySet(mgr.db).All(totalStock); err != nil {
 		fmt.Print("[error] showallnotifier: ")
 		fmt.Println(err)
 		return err
@@ -70,8 +70,8 @@ func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockItem) (err 
 	return
 }
 
-func (mgr *manager) ShowTotalStock(name string, totalStock *models.TotalStockItem) (err error) {
-	if err := models.NewTotalStockItemQuerySet(mgr.db).NameEq(name).One(totalStock); err != nil {
+func (mgr *manager) ShowTotalStock(name string, totalStock *models.TotalStockRequest) (err error) {
+	if err := models.NewTotalStockRequestQuerySet(mgr.db).NameEq(name).One(totalStock); err != nil {
 		fmt.Print("[error] shownotifier: ")
 		fmt.Println(err)
 		return err
