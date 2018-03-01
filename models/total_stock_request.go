@@ -6,6 +6,7 @@ package models
 // gen:qs
 type TotalStockRequest struct {
 	StockItem
-	Size   string `json:"size"`
-	Colour string `json:"colour"`
+	Size         string `json:"size"`
+	Colour       string `json:"colour"`
+	CurrentStock int64  `json:"currentStock"`
 }

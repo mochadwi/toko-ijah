@@ -20,14 +20,14 @@ func AddTotalStock(c *gin.Context) {
 	// "currentStock": 100
 
 	stock := models.StockItem{
-		SKU:          utils.GenerateSKU(c.PostForm("size"), c.PostForm("colour")),
-		Name:         c.PostForm("name"),
-		CurrentStock: utils.StrToInt(c.PostForm("currentStock"))}
+		SKU:  utils.GenerateSKU(c.PostForm("size"), c.PostForm("colour")),
+		Name: utils.PrettifyName(c.PostForm("name"), c.PostForm("size"), c.PostForm("colour"))}
 
 	totalStock := models.TotalStockRequest{
-		StockItem: stock,
-		Size:      c.PostForm("size"),
-		Colour:    c.PostForm("colour")}
+		StockItem:    stock,
+		Size:         c.PostForm("size"),
+		Colour:       c.PostForm("colour"),
+		CurrentStock: utils.StrToInt(c.PostForm("currentStock"))}
 
 	fmt.Println(totalStock)
 
