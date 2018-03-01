@@ -20,6 +20,8 @@ func main() {
 	{
 		// Adds total stock
 		v1.POST("/add/total/stock", controllers.AddTotalStock)
+
+		v1.GET("/total/stock", controllers.GetAllTotalStock)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

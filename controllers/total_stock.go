@@ -49,3 +49,29 @@ func AddTotalStock(c *gin.Context) {
 		c.JSON(http.StatusCreated, response)
 	}
 }
+
+// GetAllTotalStock all available list
+func GetAllTotalStock(c *gin.Context) {
+	totalStock := []models.TotalStockItem{}
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := db.Mgr.ShowAllTotalStock(&totalStock); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+		fmt.Print("[totalStock] results: ")
+		fmt.Print(totalStock)
+
+		response.Code = http.StatusOK
+		response.Message = "OK"
+		response.Data = totalStock
+
+		c.JSON(http.StatusOK, response)
+	}
+}
