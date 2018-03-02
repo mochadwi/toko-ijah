@@ -7,10 +7,31 @@ import (
 	"time"
 )
 
-// StrToInt func
-func StrToInt(word string) int64 {
+// StrToInt64 func
+func StrToInt64(word string) int64 {
 
 	num, _ := strconv.ParseInt(word, 0, 64)
+	return num
+}
+
+// StrToInt func
+func StrToInt(word string) int {
+
+	num, _ := strconv.Atoi(word)
+	return num
+}
+
+// StrToUint func
+func StrToUint(word string) uint {
+
+	num, _ := strconv.Atoi(word)
+	return uint(num)
+}
+
+// StrToUint64 func
+func StrToUint64(word string) uint64 {
+
+	num, _ := strconv.ParseUint(word, 0, 64)
 	return num
 }
 
