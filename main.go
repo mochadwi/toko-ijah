@@ -23,6 +23,7 @@ func main() {
 		v1.GET("/total/stock/:id", controllers.GetTotalStock)
 		v1.GET("/total/stock", controllers.GetAllTotalStock)
 		v1.PUT("/total/stock/:id", controllers.UpdateTotalStockByID)
+		v1.DELETE("/total/stock/:id", controllers.DeleteTotalStockByID)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

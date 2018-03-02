@@ -105,7 +105,7 @@ func GetAllTotalStock(c *gin.Context) {
 	}
 }
 
-// UpdateTotalStockByID all available list
+// UpdateTotalStockByID will update the data by ID
 func UpdateTotalStockByID(c *gin.Context) {
 	var currTotalStock models.TotalStockRequest
 	id := utils.StrToUint(c.Params.ByName("id"))
@@ -139,6 +139,30 @@ func UpdateTotalStockByID(c *gin.Context) {
 		response.Code = http.StatusAccepted
 		response.Message = http.StatusText(http.StatusAccepted)
 		response.Data = currTotalStock
+
+		c.JSON(http.StatusAccepted, response)
+	}
+}
+
+// DeleteTotalStockByID will delete the data by ID
+func DeleteTotalStockByID(c *gin.Context) {
+	id := utils.StrToUint(c.Params.ByName("id"))
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.DeleteTotalStockByID(id); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+
+		response.Code = http.StatusAccepted
+		response.Message = http.StatusText(http.StatusAccepted)
+		response.Data = nil
 
 		c.JSON(http.StatusAccepted, response)
 	}

@@ -17,6 +17,7 @@ type Manager interface {
 	ShowAllTotalStock(totalStock *[]models.TotalStockRequest) error
 	ShowTotalStock(id uint, totalStock *models.TotalStockRequest) error
 	UpdateTotalStockByID(id uint, newTotalStock *models.TotalStockRequest, currTotalStock *models.TotalStockRequest) (err error)
+	DeleteTotalStockByID(id uint) (err error)
 }
 
 type manager struct {
@@ -135,6 +136,30 @@ func (mgr *manager) UpdateTotalStockByID(id uint, newTotalStock *models.TotalSto
 			return err
 		} // end Update
 	}
+
+	return
+}
+
+func (mgr *manager) DeleteTotalStockByID(id uint) (err error) {
+
+	var tempTotalStock models.TotalStockRequest
+
+	if err := models.NewTotalStockRequestQuerySet(mgr.db).IDEq(id).One(&tempTotalStock); err != nil {
+		fmt.Print("[error] showtotalstock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// This method doesn't delete the data, for backup purpose
+	// it only update the deleted_at fields
+	tempTotalStock.Delete(mgr.db)
+
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] deletetotalstock - delete query: ")
+		fmt.Println(err)
+		return err
+	} // end Delete
 
 	return
 }
