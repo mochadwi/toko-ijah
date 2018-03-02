@@ -80,3 +80,29 @@ func GetIncomeStock(c *gin.Context) {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+// GetAllIncomeStock all available list
+func GetAllIncomeStock(c *gin.Context) {
+	incomeStock := []models.IncomeStockRequest{}
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.ShowAllIncomeStock(&incomeStock); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+		fmt.Print("[incomeStock] results: ")
+		fmt.Print(incomeStock)
+
+		response.Code = http.StatusOK
+		response.Message = http.StatusText(http.StatusOK)
+		response.Data = incomeStock
+
+		c.JSON(http.StatusOK, response)
+	}
+}
