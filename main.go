@@ -27,6 +27,7 @@ func main() {
 
 		// Adds income stock
 		v1.POST("/income/stock", controllers.AddIncomeStock)
+		v1.GET("/income/stock/:id", controllers.GetIncomeStock)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

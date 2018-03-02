@@ -22,6 +22,8 @@ type Manager interface {
 
 	// Income Stock
 	AddIncomeStock(incomeStock *models.IncomeStockRequest) error
+	ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) error
+	// ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
 }
 
 type manager struct {
@@ -175,3 +177,17 @@ func (mgr *manager) AddIncomeStock(incomeStock *models.IncomeStockRequest) (err 
 
 	return
 }
+
+func (mgr *manager) ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) (err error) {
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).IDEq(id).One(incomeStock); err != nil {
+		fmt.Print("[error] showincomestock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// fmt.Print("[success] showincomestock: ")
+	// fmt.Println(err)
+	return
+}
+
+// func ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error

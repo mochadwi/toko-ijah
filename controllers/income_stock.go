@@ -53,3 +53,30 @@ func AddIncomeStock(c *gin.Context) {
 		c.JSON(http.StatusCreated, response)
 	}
 }
+
+// GetIncomeStock record
+func GetIncomeStock(c *gin.Context) {
+	incomeStock := models.IncomeStockRequest{}
+	id := utils.StrToInt(c.Params.ByName("id"))
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.ShowIncomeStock(uint(id), &incomeStock); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+		fmt.Print("[incomeStock] results: ")
+		fmt.Print(incomeStock)
+
+		response.Code = http.StatusOK
+		response.Message = http.StatusText(http.StatusOK)
+		response.Data = incomeStock
+
+		c.JSON(http.StatusOK, response)
+	}
+}
