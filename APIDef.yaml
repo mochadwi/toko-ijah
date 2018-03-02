@@ -61,17 +61,24 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
 
-  /total/stock/{sku}:
+  /total/stock/{id}:
     get:
       tags:
       - developers
-      summary: Gets a total stock by SKU
-      operationId: getTotalStockBySKU
-      description: |
-        Get the total stock for requested SKU        
+      summary: Gets a total stock by ID
+      operationId: getTotalStockByID
+      description: Get the total stock for requested ID        
+      parameters:
+        - name: id
+          in: path
+          description: Stock ID
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         200:
-          description: totaapi/l stock retrieved
+          description: total stock by id retrieved
           schema:
             $ref: '#/definitions/DefaultResponse'
         404:

@@ -13,7 +13,8 @@ import (
 type Manager interface {
 	AddTotalStock(totalStock *models.TotalStockRequest) error
 	ShowAllTotalStock(totalStock *[]models.TotalStockRequest) error
-	ShowTotalStock(name string, totalStock *models.TotalStockRequest) error
+	ShowTotalStock(id uint, totalStock *models.TotalStockRequest) error
+	// UpdateTotalStockById(id uint, totalStock *models.TotalStockRequest) (err error)
 }
 
 type manager struct {
@@ -61,6 +62,18 @@ func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err err
 	return fmt.Errorf("%s", "duplicate entry")
 }
 
+func (mgr *manager) ShowTotalStock(id uint, totalStock *models.TotalStockRequest) (err error) {
+	if err := models.NewTotalStockRequestQuerySet(mgr.db).IDEq(id).One(totalStock); err != nil {
+		fmt.Print("[error] showtotalstock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// fmt.Print("[success] showtotalstock: ")
+	// fmt.Println(err)
+	return
+}
+
 func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockRequest) (err error) {
 	if err := models.NewTotalStockRequestQuerySet(mgr.db).All(totalStock); err != nil {
 		fmt.Print("[error] showallnotifier: ")
@@ -70,14 +83,20 @@ func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockRequest) (e
 	return
 }
 
-func (mgr *manager) ShowTotalStock(name string, totalStock *models.TotalStockRequest) (err error) {
-	if err := models.NewTotalStockRequestQuerySet(mgr.db).NameEq(name).One(totalStock); err != nil {
-		fmt.Print("[error] shownotifier: ")
-		fmt.Println(err)
-		return err
-	}
+// func (mgr *manager) UpdateTotalStockById(id uint, totalStock *models.TotalStockRequest) (err error) {
 
-	// fmt.Print("[success] shownotifier: ")
-	// fmt.Println(err)
-	return
-}
+// 	if err := models.NewTotalStockRequestUpdater(mgr.db).
+
+// 	mgr.db.Save()
+// 	if err := mgr.db.Where("id = ?", id).First(totalStock).Error; err != nil {
+
+// 		c.AbortWithStatus(404)
+// 		fmt.Println(err)
+
+// 		return err
+// 	}
+
+// 	c.BindJSON(&person)
+// 	db.Save(&person)
+// 	c.JSON(200, person)
+// }

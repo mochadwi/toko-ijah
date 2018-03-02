@@ -20,7 +20,7 @@ func main() {
 	{
 		// Adds total stock
 		v1.POST("/add/total/stock", controllers.AddTotalStock)
-
+		v1.GET("/total/stock/:id", controllers.GetTotalStock)
 		v1.GET("/total/stock", controllers.GetAllTotalStock)
 	}
 
