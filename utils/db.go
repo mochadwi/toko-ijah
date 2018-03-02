@@ -25,6 +25,7 @@ type Manager interface {
 	ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) error
 	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
 	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
+	DeleteIncomeStockByID(id uint) (err error)
 }
 
 type manager struct {
@@ -237,6 +238,30 @@ func (mgr *manager) UpdateIncomeStockByID(id uint, newIncomeStock *models.Income
 			return err
 		} // end Update
 	}
+
+	return
+}
+
+func (mgr *manager) DeleteIncomeStockByID(id uint) (err error) {
+
+	var tempIncomeStock models.IncomeStockRequest
+
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).IDEq(id).One(&tempIncomeStock); err != nil {
+		fmt.Print("[error] showincomestock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// This method doesn't delete the data, for backup purpose
+	// it only update the deleted_at fields
+	tempIncomeStock.Delete(mgr.db)
+
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] deleteincomestock - delete query: ")
+		fmt.Println(err)
+		return err
+	} // end Delete
 
 	return
 }

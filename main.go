@@ -30,6 +30,7 @@ func main() {
 		v1.GET("/income/stock/:id", controllers.GetIncomeStock)
 		v1.GET("/income/stock", controllers.GetAllIncomeStock)
 		v1.PUT("/income/stock/:id", controllers.UpdateIncomeStockByID)
+		v1.DELETE("/income/stock/:id", controllers.DeleteIncomeStockByID)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

@@ -143,3 +143,27 @@ func UpdateIncomeStockByID(c *gin.Context) {
 		c.JSON(http.StatusAccepted, response)
 	}
 }
+
+// DeleteIncomeStockByID will delete the data by ID
+func DeleteIncomeStockByID(c *gin.Context) {
+	id := utils.StrToUint(c.Params.ByName("id"))
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.DeleteIncomeStockByID(id); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+
+		response.Code = http.StatusAccepted
+		response.Message = http.StatusText(http.StatusAccepted)
+		response.Data = nil
+
+		c.JSON(http.StatusAccepted, response)
+	}
+}
