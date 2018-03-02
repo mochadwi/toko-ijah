@@ -13,11 +13,15 @@ import (
 
 // Manager interface
 type Manager interface {
+	// Total Stock
 	AddTotalStock(totalStock *models.TotalStockRequest) error
 	ShowAllTotalStock(totalStock *[]models.TotalStockRequest) error
 	ShowTotalStock(id uint, totalStock *models.TotalStockRequest) error
 	UpdateTotalStockByID(id uint, newTotalStock *models.TotalStockRequest, currTotalStock *models.TotalStockRequest) (err error)
 	DeleteTotalStockByID(id uint) (err error)
+
+	// Income Stock
+	AddIncomeStock(incomeStock *models.IncomeStockRequest) error
 }
 
 type manager struct {
@@ -38,7 +42,8 @@ func init() {
 	Mgr = &manager{db: db}
 
 	db.Debug().AutoMigrate(
-		&models.TotalStockRequest{})
+		&models.TotalStockRequest{},
+		&models.IncomeStockRequest{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -102,16 +107,8 @@ func (mgr *manager) UpdateTotalStockByID(id uint, newTotalStock *models.TotalSto
 
 	if !cmp.Equal(currTotalStock, newTotalStock) {
 		// Update
-		// mgr.db.Update(&newTotalStock)
-
 		var oldStr = currTotalStock.SKU[13:len(currTotalStock.SKU)]
 		var newStr = newTotalStock.SKU[13:len(newTotalStock.SKU)]
-
-		// fmt.Println("temp sku completed: " + currTotalStock.SKU)
-		// fmt.Println("temp sku: " + currTotalStock.SKU[0:16])
-		// fmt.Println("temp sku: " + oldStr)
-		// fmt.Println("new sku completed: " + newTotalStock.SKU)
-		// fmt.Println("new sku: " + newStr)
 
 		currTotalStock = &models.TotalStockRequest{
 			StockItem: models.StockItem{
@@ -160,6 +157,21 @@ func (mgr *manager) DeleteTotalStockByID(id uint) (err error) {
 		fmt.Println(err)
 		return err
 	} // end Delete
+
+	return
+}
+
+func (mgr *manager) AddIncomeStock(incomeStock *models.IncomeStockRequest) (err error) {
+
+	// Create
+	incomeStock.Create(mgr.db)
+
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] addincomestock - create query: ")
+		fmt.Println(err)
+		return err
+	} // end Create
 
 	return
 }

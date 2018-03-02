@@ -17,7 +17,7 @@ tags:
   description: Operations available to regular developers
 
 paths:
-  /add/total/stock:
+  /total/stock:
     post:
       tags:
       - developers
@@ -41,8 +41,6 @@ paths:
           description: bad input parameters
           schema:
             $ref: '#/definitions/ErrorResponse'
-
-  /total/stock:
     get:
       tags:
       - developers
@@ -153,7 +151,7 @@ paths:
           name: incomestock
           description: The requested income stock body.
           schema:
-            $ref: '#/definitions/TotalStockRequest'
+            $ref: '#/definitions/IncomeStockItem'
       responses:
         201:
           description: income stock data created
@@ -245,9 +243,12 @@ definitions:
   TotalStockRequest:
     type: object
     properties:
+      sku:
+        type: string
+        example: "SSI-D00791015-LL-BWH"
       name:
         type: string
-        example: "Zalekia Plain Casual Blouse"
+        example: "Zalekia Plain Casual Blouse (L,Broken White)"
       size:
         type: string
         enum: [L, M, XL, S, XXX, XXL]
@@ -285,6 +286,36 @@ definitions:
         format: unix_timestamp
         example: 1511859233
 
+  IncomeStockItem:
+    type: object
+    properties:
+      time:
+        type: string
+        example: "2018/01/02 11:20"
+      sku:
+        type: string
+        example: "SSI-D00791015-LL-BWH"
+      name:
+        type: string
+        example: "Zalekia Plain Casual Blouse"
+      orderAmount:
+        type: integer
+        example: 100
+      amountReceived:
+        type: integer
+        example: 100
+      purchasePrice:
+        type: string
+        example: 74000
+      totalPrice:
+        type: integer
+        example: 74000
+      receiptNumber:
+        type: string
+        example: "20180102-69539"
+      note:
+        type: string
+        example: "2018/01/06 terima 47; Masih Menunggu"
 schemes:
  - https
 host: localhost

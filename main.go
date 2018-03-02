@@ -19,11 +19,14 @@ func main() {
 	v1 := engine.Group(baseURL)
 	{
 		// Adds total stock
-		v1.POST("/add/total/stock", controllers.AddTotalStock)
+		v1.POST("/total/stock", controllers.AddTotalStock)
 		v1.GET("/total/stock/:id", controllers.GetTotalStock)
 		v1.GET("/total/stock", controllers.GetAllTotalStock)
 		v1.PUT("/total/stock/:id", controllers.UpdateTotalStockByID)
 		v1.DELETE("/total/stock/:id", controllers.DeleteTotalStockByID)
+
+		// Adds income stock
+		v1.POST("/income/stock", controllers.AddIncomeStock)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {
