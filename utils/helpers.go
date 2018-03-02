@@ -21,6 +21,13 @@ func StrToInt(word string) int {
 	return num
 }
 
+// StrToUint func
+func StrToUint(word string) uint {
+
+	num, _ := strconv.Atoi(word)
+	return uint(num)
+}
+
 // StrToUint64 func
 func StrToUint64(word string) uint64 {
 

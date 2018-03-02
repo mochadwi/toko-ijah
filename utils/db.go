@@ -3,7 +3,9 @@ package utils
 import (
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/mochadwi/toko-ijah/models"
@@ -14,7 +16,7 @@ type Manager interface {
 	AddTotalStock(totalStock *models.TotalStockRequest) error
 	ShowAllTotalStock(totalStock *[]models.TotalStockRequest) error
 	ShowTotalStock(id uint, totalStock *models.TotalStockRequest) error
-	// UpdateTotalStockById(id uint, totalStock *models.TotalStockRequest) (err error)
+	UpdateTotalStockByID(id uint, newTotalStock *models.TotalStockRequest, currTotalStock *models.TotalStockRequest) (err error)
 }
 
 type manager struct {
@@ -83,20 +85,56 @@ func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockRequest) (e
 	return
 }
 
-// func (mgr *manager) UpdateTotalStockById(id uint, totalStock *models.TotalStockRequest) (err error) {
+func (mgr *manager) UpdateTotalStockByID(id uint, newTotalStock *models.TotalStockRequest, currTotalStock *models.TotalStockRequest) (err error) {
 
-// 	if err := models.NewTotalStockRequestUpdater(mgr.db).
+	if err := models.NewTotalStockRequestQuerySet(mgr.db).IDEq(id).One(currTotalStock); err != nil {
+		fmt.Print("[error] showtotalstock: ")
+		fmt.Println(err)
+		return err
+	}
 
-// 	mgr.db.Save()
-// 	if err := mgr.db.Where("id = ?", id).First(totalStock).Error; err != nil {
+	fmt.Print("[totalstock]: ")
+	fmt.Println(newTotalStock)
 
-// 		c.AbortWithStatus(404)
-// 		fmt.Println(err)
+	fmt.Print("[temptotalstock]: ")
+	fmt.Println(currTotalStock)
 
-// 		return err
-// 	}
+	if !cmp.Equal(currTotalStock, newTotalStock) {
+		// Update
+		// mgr.db.Update(&newTotalStock)
 
-// 	c.BindJSON(&person)
-// 	db.Save(&person)
-// 	c.JSON(200, person)
-// }
+		var oldStr = currTotalStock.SKU[13:len(currTotalStock.SKU)]
+		var newStr = newTotalStock.SKU[13:len(newTotalStock.SKU)]
+
+		// fmt.Println("temp sku completed: " + currTotalStock.SKU)
+		// fmt.Println("temp sku: " + currTotalStock.SKU[0:16])
+		// fmt.Println("temp sku: " + oldStr)
+		// fmt.Println("new sku completed: " + newTotalStock.SKU)
+		// fmt.Println("new sku: " + newStr)
+
+		currTotalStock = &models.TotalStockRequest{
+			StockItem: models.StockItem{
+				ID:   id,
+				SKU:  strings.Replace(currTotalStock.SKU, oldStr, newStr, -1),
+				Name: newTotalStock.Name},
+			Size:         newTotalStock.Size,
+			Colour:       newTotalStock.Colour,
+			CurrentStock: newTotalStock.CurrentStock}
+
+		currTotalStock.Update(mgr.db,
+			models.TotalStockRequestDBSchema.SKU,
+			models.TotalStockRequestDBSchema.Name,
+			models.TotalStockRequestDBSchema.Size,
+			models.TotalStockRequestDBSchema.Colour,
+			models.TotalStockRequestDBSchema.CurrentStock)
+
+		if errs := mgr.db.GetErrors(); len(errs) > 0 {
+			err = errs[0]
+			fmt.Print("[error] updatetotalstock - update query: ")
+			fmt.Println(err)
+			return err
+		} // end Update
+	}
+
+	return
+}

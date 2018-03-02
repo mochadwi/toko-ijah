@@ -105,30 +105,41 @@ func GetAllTotalStock(c *gin.Context) {
 	}
 }
 
-/* UpdateTotalStockById all available list
-func UpdateTotalStockById(c *gin.Context) {
-	var totalStock TotalStockRequest
-	id := c.Params.ByName("id")
+// UpdateTotalStockByID all available list
+func UpdateTotalStockByID(c *gin.Context) {
+	var currTotalStock models.TotalStockRequest
+	id := utils.StrToUint(c.Params.ByName("id"))
+
+	stock := models.StockItem{
+		SKU:  utils.GenerateSKU(c.PostForm("size"), c.PostForm("colour")),
+		Name: utils.PrettifyName(c.PostForm("name"), c.PostForm("size"), c.PostForm("colour"))}
+
+	newTotalStock := models.TotalStockRequest{
+		StockItem:    stock,
+		Size:         c.PostForm("size"),
+		Colour:       c.PostForm("colour"),
+		CurrentStock: utils.StrToInt64(c.PostForm("currentStock"))}
+
+	fmt.Println(newTotalStock)
 
 	var response = &index.DefaultResponseFormat{
 		RequestID: uuid.NewV4().String(),
 		Now:       time.Now().Unix(),
 	}
 
-	if err := utils.Mgr.UpdateTotalStockById(id, &totalStock); err != nil {
+	if err := utils.Mgr.UpdateTotalStockByID(id, &newTotalStock, &currTotalStock); err != nil {
 		response.Code = http.StatusNotFound
 		response.Message = err.Error()
 
 		c.JSON(http.StatusNotFound, response)
 	} else {
 		fmt.Print("[totalStock] results: ")
-		fmt.Print(totalStock)
+		fmt.Print(currTotalStock)
 
 		response.Code = http.StatusAccepted
 		response.Message = http.StatusText(http.StatusAccepted)
-		response.Data = totalStock
+		response.Data = currTotalStock
 
 		c.JSON(http.StatusAccepted, response)
 	}
 }
-*/
