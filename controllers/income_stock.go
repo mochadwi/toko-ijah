@@ -106,3 +106,40 @@ func GetAllIncomeStock(c *gin.Context) {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+// UpdateIncomeStockByID will update the data by ID
+func UpdateIncomeStockByID(c *gin.Context) {
+	var currIncomeStock models.IncomeStockRequest
+	id := utils.StrToUint(c.Params.ByName("id"))
+
+	var amountReceived = utils.StrToUint(c.PostForm("amountReceived"))
+
+	newIncomeStock := models.IncomeStockRequest{
+		AmountReceived: amountReceived,
+		TotalPrice:     utils.StrToUint(c.PostForm("totalPrice")),
+		ReceiptNumber:  c.PostForm("receiptNumber"),
+		Note:           c.PostForm("note")}
+
+	fmt.Println(newIncomeStock)
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.UpdateIncomeStockByID(id, &newIncomeStock, &currIncomeStock); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+		fmt.Print("[totalStock] results: ")
+		fmt.Print(currIncomeStock)
+
+		response.Code = http.StatusAccepted
+		response.Message = http.StatusText(http.StatusAccepted)
+		response.Data = currIncomeStock
+
+		c.JSON(http.StatusAccepted, response)
+	}
+}

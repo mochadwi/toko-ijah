@@ -24,6 +24,7 @@ type Manager interface {
 	AddIncomeStock(incomeStock *models.IncomeStockRequest) error
 	ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) error
 	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
+	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
 }
 
 type manager struct {
@@ -196,5 +197,46 @@ func (mgr *manager) ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest)
 		fmt.Println(err)
 		return err
 	}
+	return
+}
+
+func (mgr *manager) UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error) {
+
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).IDEq(id).One(currIncomeStock); err != nil {
+		fmt.Print("[error] showtotalstock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Print("[totalstock]: ")
+	fmt.Println(newIncomeStock)
+
+	fmt.Print("[temptotalstock]: ")
+	fmt.Println(currIncomeStock)
+
+	if !cmp.Equal(currIncomeStock, newIncomeStock) {
+		// Update
+		currIncomeStock = &models.IncomeStockRequest{
+			StockItem: models.StockItem{
+				ID: id},
+			AmountReceived: newIncomeStock.AmountReceived,
+			TotalPrice:     newIncomeStock.TotalPrice,
+			ReceiptNumber:  newIncomeStock.ReceiptNumber,
+			Note:           newIncomeStock.Note}
+
+		currIncomeStock.Update(mgr.db,
+			models.IncomeStockRequestDBSchema.AmountReceived,
+			models.IncomeStockRequestDBSchema.TotalPrice,
+			models.IncomeStockRequestDBSchema.ReceiptNumber,
+			models.IncomeStockRequestDBSchema.Note)
+
+		if errs := mgr.db.GetErrors(); len(errs) > 0 {
+			err = errs[0]
+			fmt.Print("[error] updatetotalstock - update query: ")
+			fmt.Println(err)
+			return err
+		} // end Update
+	}
+
 	return
 }

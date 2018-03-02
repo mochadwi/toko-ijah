@@ -29,6 +29,7 @@ func main() {
 		v1.POST("/income/stock", controllers.AddIncomeStock)
 		v1.GET("/income/stock/:id", controllers.GetIncomeStock)
 		v1.GET("/income/stock", controllers.GetAllIncomeStock)
+		v1.PUT("/income/stock/:id", controllers.UpdateIncomeStockByID)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {
