@@ -23,7 +23,7 @@ type Manager interface {
 	// Income Stock
 	AddIncomeStock(incomeStock *models.IncomeStockRequest) error
 	ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) error
-	// ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
+	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
 }
 
 type manager struct {
@@ -86,7 +86,7 @@ func (mgr *manager) ShowTotalStock(id uint, totalStock *models.TotalStockRequest
 
 func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockRequest) (err error) {
 	if err := models.NewTotalStockRequestQuerySet(mgr.db).All(totalStock); err != nil {
-		fmt.Print("[error] showallnotifier: ")
+		fmt.Print("[error] showalltotalstock: ")
 		fmt.Println(err)
 		return err
 	}
@@ -190,4 +190,11 @@ func (mgr *manager) ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequ
 	return
 }
 
-// func ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
+func (mgr *manager) ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) (err error) {
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).All(incomeStock); err != nil {
+		fmt.Print("[error] showallincomestock: ")
+		fmt.Println(err)
+		return err
+	}
+	return
+}
