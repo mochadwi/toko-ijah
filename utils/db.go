@@ -289,12 +289,12 @@ func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err er
 
 	valueStocks := make([]models.ValueStock, len(totalStocks))
 
-	var reportAmountReceived uint
-	var reportTotal uint
-
 	for i, totalStock := range totalStocks {
 		// fmt.Print(strconv.Itoa(i) + "[i]: ")
 		// fmt.Println(totalStock)
+
+		var reportAmountReceived = 0
+		var reportTotal = 0
 
 		incomeStocks := []models.IncomeStockRequest{}
 		if err = models.NewIncomeStockRequestQuerySet(mgr.db).SKUEq(totalStock.SKU).OrderAscByID().All(&incomeStocks); err != nil {
@@ -306,24 +306,36 @@ func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err er
 			// fmt.Print(strconv.Itoa(j) + "[j] : ")
 			// fmt.Println(incomeStock)
 
-			reportAmountReceived += incomeStock.AmountReceived
-			reportTotal += incomeStock.TotalPrice
+			reportAmountReceived += int(incomeStock.AmountReceived)
+			reportTotal += int(incomeStock.TotalPrice)
 		}
 
-		valueStocks[i].StockItem = totalStock.StockItem
-		valueStocks[i].FinalStock = reportAmountReceived
-		valueStocks[i].AvgPurchases = reportTotal / reportAmountReceived
-		valueStocks[i].Total = valueStocks[i].FinalStock * valueStocks[i].AvgPurchases
+		if len(incomeStocks) > 0 {
+			fmt.Print(valueStocks[i].StockItem.SKU)
+			fmt.Println(": ")
+			fmt.Print("- Final Stock")
+			fmt.Println(reportAmountReceived)
+			fmt.Print("- Total Prices")
+			fmt.Println(reportTotal)
 
-		valueReport.SKUCount++
-		valueReport.StockCount += reportAmountReceived
-		valueReport.TotalStockCount += valueStocks[i].Total
+			valueStocks[i].FinalStock = uint(reportAmountReceived)
+			valueStocks[i].AvgPurchases = uint(reportTotal / reportAmountReceived)
+			valueStocks[i].Total = valueStocks[i].FinalStock * valueStocks[i].AvgPurchases
+			valueStocks[i].StockItem = totalStock.StockItem
+
+			valueReport.SKUCount++
+			valueReport.StockCount += uint(reportAmountReceived)
+			valueReport.TotalStockCount += valueStocks[i].Total
+		}
 	}
 
 	valueReport.ValueStock = valueStocks
 
-	fmt.Print("Value Report: ")
-	fmt.Println(valueReport)
+	// Create
+	valueReport.Create(mgr.db)
+
+	// fmt.Print("Value Report: ")
+	// fmt.Println(valueReport)
 
 	return
 }
