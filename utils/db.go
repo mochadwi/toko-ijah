@@ -25,6 +25,14 @@ type Manager interface {
 	ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) error
 	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
 	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
+	DeleteIncomeStockByID(id uint) (err error)
+
+	// Outcome Stock
+	AddOutcomeStock(incomeStock *models.OutcomeStockRequest) error
+	ShowOutcomeStock(id uint, incomeStock *models.OutcomeStockRequest) error
+	ShowAllOutcomeStock(incomeStock *[]models.OutcomeStockRequest) error
+	UpdateOutcomeStockByID(id uint, newOutcomeStock *models.OutcomeStockRequest, currOutcomeStock *models.OutcomeStockRequest) (err error)
+	DeleteOutcomeStockByID(id uint) (err error)
 }
 
 type manager struct {
@@ -46,7 +54,8 @@ func init() {
 
 	db.Debug().AutoMigrate(
 		&models.TotalStockRequest{},
-		&models.IncomeStockRequest{})
+		&models.IncomeStockRequest{},
+		&models.OutcomeStockRequest{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -169,6 +178,7 @@ func (mgr *manager) AddIncomeStock(incomeStock *models.IncomeStockRequest) (err 
 	// Create
 	incomeStock.Create(mgr.db)
 
+	// TODO: update the actual total stock data
 	if errs := mgr.db.GetErrors(); len(errs) > 0 {
 		err = errs[0]
 		fmt.Print("[error] addincomestock - create query: ")
@@ -214,6 +224,7 @@ func (mgr *manager) UpdateIncomeStockByID(id uint, newIncomeStock *models.Income
 	fmt.Print("[temptotalstock]: ")
 	fmt.Println(currIncomeStock)
 
+	// TODO: update the actual total stock data
 	if !cmp.Equal(currIncomeStock, newIncomeStock) {
 		// Update
 		currIncomeStock = &models.IncomeStockRequest{
@@ -237,6 +248,135 @@ func (mgr *manager) UpdateIncomeStockByID(id uint, newIncomeStock *models.Income
 			return err
 		} // end Update
 	}
+
+	return
+}
+
+func (mgr *manager) DeleteIncomeStockByID(id uint) (err error) {
+
+	var tempIncomeStock models.IncomeStockRequest
+
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).IDEq(id).One(&tempIncomeStock); err != nil {
+		fmt.Print("[error] showincomestock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// TODO: update the actual total stock data
+	// This method doesn't delete the data, for backup purpose
+	// it only update the deleted_at fields
+	tempIncomeStock.Delete(mgr.db)
+
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] deleteincomestock - delete query: ")
+		fmt.Println(err)
+		return err
+	} // end Delete
+
+	return
+}
+
+func (mgr *manager) AddOutcomeStock(outcomeStock *models.OutcomeStockRequest) (err error) {
+
+	// Create
+	outcomeStock.Create(mgr.db)
+
+	// TODO: update the actual total stock data
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] addoutcomestock - create query: ")
+		fmt.Println(err)
+		return err
+	} // end Create
+
+	return
+}
+
+func (mgr *manager) ShowOutcomeStock(id uint, outcomeStock *models.OutcomeStockRequest) (err error) {
+	if err := models.NewOutcomeStockRequestQuerySet(mgr.db).IDEq(id).One(outcomeStock); err != nil {
+		fmt.Print("[error] showoutcomestock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// fmt.Print("[success] showoutcomestock: ")
+	// fmt.Println(err)
+	return
+}
+
+func (mgr *manager) ShowAllOutcomeStock(outcomeStock *[]models.OutcomeStockRequest) (err error) {
+	if err := models.NewOutcomeStockRequestQuerySet(mgr.db).All(outcomeStock); err != nil {
+		fmt.Print("[error] showalloutcomestock: ")
+		fmt.Println(err)
+		return err
+	}
+	return
+}
+
+func (mgr *manager) UpdateOutcomeStockByID(id uint, newOutcomeStock *models.OutcomeStockRequest, currOutcomeStock *models.OutcomeStockRequest) (err error) {
+
+	if err := models.NewOutcomeStockRequestQuerySet(mgr.db).IDEq(id).One(currOutcomeStock); err != nil {
+		fmt.Print("[error] showtotalstock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Print("[totalstock]: ")
+	fmt.Println(newOutcomeStock)
+
+	fmt.Print("[temptotalstock]: ")
+	fmt.Println(currOutcomeStock)
+
+	// TODO: update the actual total stock data
+	if !cmp.Equal(currOutcomeStock, newOutcomeStock) {
+		// Update
+		currOutcomeStock = &models.OutcomeStockRequest{
+			StockItem: models.StockItem{
+				ID: id},
+			AmountDelivered: newOutcomeStock.AmountDelivered,
+			SellPrice:       newOutcomeStock.SellPrice,
+			TotalPrice:      newOutcomeStock.TotalPrice,
+			Note:            newOutcomeStock.Note}
+
+		currOutcomeStock.Update(mgr.db,
+			models.OutcomeStockRequestDBSchema.AmountDelivered,
+			models.OutcomeStockRequestDBSchema.SellPrice,
+			models.OutcomeStockRequestDBSchema.TotalPrice,
+			models.OutcomeStockRequestDBSchema.Note)
+
+		if errs := mgr.db.GetErrors(); len(errs) > 0 {
+			err = errs[0]
+			fmt.Print("[error] updatetotalstock - update query: ")
+			fmt.Println(err)
+			return err
+		} // end Update
+	}
+
+	return
+}
+
+func (mgr *manager) DeleteOutcomeStockByID(id uint) (err error) {
+
+	var tempOutcomeStock models.OutcomeStockRequest
+
+	if err := models.NewOutcomeStockRequestQuerySet(mgr.db).IDEq(id).One(&tempOutcomeStock); err != nil {
+		fmt.Print("[error] showoutcomestock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// TODO: update the actual total stock data
+	// This method doesn't delete the data, for backup purpose
+	// it only update the deleted_at fields
+	tempOutcomeStock.Delete(mgr.db)
+
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] deleteoutcomestock - delete query: ")
+		fmt.Println(err)
+		return err
+	} // end Delete
 
 	return
 }

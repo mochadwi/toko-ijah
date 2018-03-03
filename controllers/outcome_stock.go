@@ -12,35 +12,38 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// AddIncomeStock will add new income stocks
-func AddIncomeStock(c *gin.Context) {
+// AddOutcomeStock will add new outcome stocks
+func AddOutcomeStock(c *gin.Context) {
+
+	// AmountDelivered uint   `json:"amountDelivered"`
+	// SellPrice       uint   `json:"sellPrice"`
+	// TotalPrice      uint   `json:"totalPrice"`
+	// Note            string `json:"note"`
 
 	stock := models.StockItem{
 		SKU:  c.PostForm("sku"),
 		Name: c.PostForm("name")}
 
 	date := time.Now()
-	var amountReceived = utils.StrToUint(c.PostForm("amountReceived"))
-	var purchasePrice = utils.StrToUint(c.PostForm("purchasePrice"))
+	var amountDelivered = utils.StrToUint(c.PostForm("amountDelivered"))
+	var sellPrice = utils.StrToUint(c.PostForm("sellPrice"))
 
-	incomeStock := models.IncomeStockRequest{
-		Time:           date,
-		StockItem:      stock,
-		OrderAmount:    utils.StrToUint(c.PostForm("orderAmount")),
-		AmountReceived: amountReceived,
-		PurchasePrice:  purchasePrice,
-		TotalPrice:     amountReceived * purchasePrice,
-		ReceiptNumber:  utils.GenerateReceipt(date.Format("20060102")),
-		Note:           c.PostForm("note")}
+	outcomeStock := models.OutcomeStockRequest{
+		Time:            date,
+		StockItem:       stock,
+		AmountDelivered: amountDelivered,
+		SellPrice:       sellPrice,
+		TotalPrice:      amountDelivered * sellPrice,
+		Note:            c.PostForm("note")}
 
-	fmt.Println(incomeStock)
+	fmt.Println(outcomeStock)
 
 	var response = &index.DefaultResponseFormat{
 		RequestID: uuid.NewV4().String(),
 		Now:       time.Now().Unix(),
 	}
 
-	if err := utils.Mgr.AddIncomeStock(&incomeStock); err != nil {
+	if err := utils.Mgr.AddOutcomeStock(&outcomeStock); err != nil {
 		response.Code = http.StatusBadRequest
 		response.Message = err.Error()
 
@@ -48,104 +51,102 @@ func AddIncomeStock(c *gin.Context) {
 	} else {
 		response.Code = http.StatusCreated
 		response.Message = http.StatusText(http.StatusCreated)
-		response.Data = incomeStock
+		response.Data = outcomeStock
 
 		c.JSON(http.StatusCreated, response)
 	}
 }
 
-// GetIncomeStock record
-func GetIncomeStock(c *gin.Context) {
-	incomeStock := models.IncomeStockRequest{}
-	id := utils.StrToInt(c.Params.ByName("id"))
-
-	var response = &index.DefaultResponseFormat{
-		RequestID: uuid.NewV4().String(),
-		Now:       time.Now().Unix(),
-	}
-
-	if err := utils.Mgr.ShowIncomeStock(uint(id), &incomeStock); err != nil {
-		response.Code = http.StatusNotFound
-		response.Message = err.Error()
-
-		c.JSON(http.StatusNotFound, response)
-	} else {
-		fmt.Print("[incomeStock] results: ")
-		fmt.Print(incomeStock)
-
-		response.Code = http.StatusOK
-		response.Message = http.StatusText(http.StatusOK)
-		response.Data = incomeStock
-
-		c.JSON(http.StatusOK, response)
-	}
-}
-
-// GetAllIncomeStock all available list
-func GetAllIncomeStock(c *gin.Context) {
-	incomeStock := []models.IncomeStockRequest{}
-
-	var response = &index.DefaultResponseFormat{
-		RequestID: uuid.NewV4().String(),
-		Now:       time.Now().Unix(),
-	}
-
-	if err := utils.Mgr.ShowAllIncomeStock(&incomeStock); err != nil {
-		response.Code = http.StatusNotFound
-		response.Message = err.Error()
-
-		c.JSON(http.StatusNotFound, response)
-	} else {
-		fmt.Print("[incomeStock] results: ")
-		fmt.Print(incomeStock)
-
-		response.Code = http.StatusOK
-		response.Message = http.StatusText(http.StatusOK)
-		response.Data = incomeStock
-
-		c.JSON(http.StatusOK, response)
-	}
-}
-
-// UpdateIncomeStockByID will update the data by ID
-func UpdateIncomeStockByID(c *gin.Context) {
-	var currIncomeStock models.IncomeStockRequest
+// GetOutcomeStock record
+func GetOutcomeStock(c *gin.Context) {
+	outcomeStock := models.OutcomeStockRequest{}
 	id := utils.StrToUint(c.Params.ByName("id"))
 
-	var amountReceived = utils.StrToUint(c.PostForm("amountReceived"))
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
 
-	newIncomeStock := models.IncomeStockRequest{
-		AmountReceived: amountReceived,
-		TotalPrice:     utils.StrToUint(c.PostForm("totalPrice")),
-		ReceiptNumber:  c.PostForm("receiptNumber"),
-		Note:           c.PostForm("note")}
+	if err := utils.Mgr.ShowOutcomeStock(id, &outcomeStock); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
 
-	fmt.Println(newIncomeStock)
+		c.JSON(http.StatusNotFound, response)
+	} else {
+		fmt.Print("[outcomeStock] results: ")
+		fmt.Print(outcomeStock)
+
+		response.Code = http.StatusOK
+		response.Message = http.StatusText(http.StatusOK)
+		response.Data = outcomeStock
+
+		c.JSON(http.StatusOK, response)
+	}
+}
+
+// GetAllOutcomeStock all available list
+func GetAllOutcomeStock(c *gin.Context) {
+	outcomeStock := []models.OutcomeStockRequest{}
 
 	var response = &index.DefaultResponseFormat{
 		RequestID: uuid.NewV4().String(),
 		Now:       time.Now().Unix(),
 	}
 
-	if err := utils.Mgr.UpdateIncomeStockByID(id, &newIncomeStock, &currIncomeStock); err != nil {
+	if err := utils.Mgr.ShowAllOutcomeStock(&outcomeStock); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+		fmt.Print("[outcomeStock] results: ")
+		fmt.Print(outcomeStock)
+
+		response.Code = http.StatusOK
+		response.Message = http.StatusText(http.StatusOK)
+		response.Data = outcomeStock
+
+		c.JSON(http.StatusOK, response)
+	}
+}
+
+// UpdateOutcomeStockByID will update the data by ID
+func UpdateOutcomeStockByID(c *gin.Context) {
+	var currOutcomeStock models.OutcomeStockRequest
+	id := utils.StrToUint(c.Params.ByName("id"))
+
+	newOutcomeStock := models.OutcomeStockRequest{
+		AmountDelivered: utils.StrToUint(c.PostForm("amountDelivered")),
+		SellPrice:       utils.StrToUint(c.PostForm("sellPrice")),
+		TotalPrice:      utils.StrToUint(c.PostForm("totalPrice")),
+		Note:            c.PostForm("note")}
+
+	fmt.Println(newOutcomeStock)
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.UpdateOutcomeStockByID(id, &newOutcomeStock, &currOutcomeStock); err != nil {
 		response.Code = http.StatusNotFound
 		response.Message = err.Error()
 
 		c.JSON(http.StatusNotFound, response)
 	} else {
 		fmt.Print("[totalStock] results: ")
-		fmt.Print(currIncomeStock)
+		fmt.Print(currOutcomeStock)
 
 		response.Code = http.StatusAccepted
 		response.Message = http.StatusText(http.StatusAccepted)
-		response.Data = currIncomeStock
+		response.Data = currOutcomeStock
 
 		c.JSON(http.StatusAccepted, response)
 	}
 }
 
-// DeleteIncomeStockByID will delete the data by ID
-func DeleteIncomeStockByID(c *gin.Context) {
+// DeleteOutcomeStockByID will delete the data by ID
+func DeleteOutcomeStockByID(c *gin.Context) {
 	id := utils.StrToUint(c.Params.ByName("id"))
 
 	var response = &index.DefaultResponseFormat{
@@ -153,7 +154,7 @@ func DeleteIncomeStockByID(c *gin.Context) {
 		Now:       time.Now().Unix(),
 	}
 
-	if err := utils.Mgr.DeleteIncomeStockByID(id); err != nil {
+	if err := utils.Mgr.DeleteOutcomeStockByID(id); err != nil {
 		response.Code = http.StatusNotFound
 		response.Message = err.Error()
 
