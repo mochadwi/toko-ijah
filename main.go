@@ -39,8 +39,9 @@ func main() {
 		v1.PUT("/outcome/stock/:id", controllers.UpdateOutcomeStockByID)
 		v1.DELETE("/outcome/stock/:id", controllers.DeleteOutcomeStockByID)
 
-		// Generate income value
+		// Generate value report
 		v1.GET("/value/report", controllers.GenerateValueReport)
+		v1.GET("/value/csv", controllers.GenerateValueCSV)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

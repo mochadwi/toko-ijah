@@ -29,6 +29,12 @@ func StrToUint(word string) uint {
 	return uint(num)
 }
 
+// UintToStr func
+func UintToStr(num uint) string {
+
+	return strconv.Itoa(int(num))
+}
+
 // StrToUint64 func
 func StrToUint64(word string) uint64 {
 

@@ -27,6 +27,7 @@ type Manager interface {
 	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
 	DeleteIncomeStockByID(id uint) (err error)
 	GenerateValueReport(valueReport *models.ValueReport) (err error)
+	GenerateValueCSV(valueStocks *[]models.ValueStock) error
 
 	// Outcome Stock
 	AddOutcomeStock(incomeStock *models.OutcomeStockRequest) error
@@ -57,7 +58,9 @@ func init() {
 	db.Debug().AutoMigrate(
 		&models.TotalStockRequest{},
 		&models.IncomeStockRequest{},
-		&models.OutcomeStockRequest{})
+		&models.OutcomeStockRequest{},
+		&models.ValueReport{},
+		&models.ValueStock{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -327,6 +330,8 @@ func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err er
 			valueReport.StockCount += uint(reportAmountReceived)
 			valueReport.TotalStockCount += valueStocks[i].Total
 		}
+
+		valueStocks[i].Create(mgr.db)
 	}
 
 	valueReport.ValueStock = valueStocks
@@ -336,6 +341,16 @@ func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err er
 
 	// fmt.Print("Value Report: ")
 	// fmt.Println(valueReport)
+
+	return
+}
+
+func (mgr *manager) GenerateValueCSV(valueStocks *[]models.ValueStock) (err error) {
+
+	if err = models.NewValueStockQuerySet(mgr.db).All(valueStocks); err != nil {
+
+		return err
+	}
 
 	return
 }
