@@ -167,3 +167,27 @@ func DeleteIncomeStockByID(c *gin.Context) {
 		c.JSON(http.StatusAccepted, response)
 	}
 }
+
+// GenerateValueReport will delete the data by ID
+func GenerateValueReport(c *gin.Context) {
+	valueReport := models.ValueReport{}
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.GenerateValueReport(&valueReport); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+
+		response.Code = http.StatusAccepted
+		response.Message = http.StatusText(http.StatusAccepted)
+		response.Data = valueReport
+
+		c.JSON(http.StatusAccepted, response)
+	}
+}

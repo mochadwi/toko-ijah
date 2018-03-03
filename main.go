@@ -38,6 +38,9 @@ func main() {
 		v1.GET("/outcome/stock", controllers.GetAllOutcomeStock)
 		v1.PUT("/outcome/stock/:id", controllers.UpdateOutcomeStockByID)
 		v1.DELETE("/outcome/stock/:id", controllers.DeleteOutcomeStockByID)
+
+		// Generate income value
+		v1.GET("/value/report", controllers.GenerateValueReport)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

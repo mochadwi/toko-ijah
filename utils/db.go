@@ -26,6 +26,7 @@ type Manager interface {
 	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
 	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
 	DeleteIncomeStockByID(id uint) (err error)
+	GenerateValueReport(valueReport *models.ValueReport) (err error)
 
 	// Outcome Stock
 	AddOutcomeStock(incomeStock *models.OutcomeStockRequest) error
@@ -52,6 +53,7 @@ func init() {
 
 	Mgr = &manager{db: db}
 
+	// db.Model(&user).Related(&emails)
 	db.Debug().AutoMigrate(
 		&models.TotalStockRequest{},
 		&models.IncomeStockRequest{},
@@ -273,6 +275,55 @@ func (mgr *manager) DeleteIncomeStockByID(id uint) (err error) {
 		fmt.Println(err)
 		return err
 	} // end Delete
+
+	return
+}
+
+func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err error) {
+
+	totalStocks := []models.TotalStockRequest{}
+	if err = models.NewTotalStockRequestQuerySet(mgr.db).OrderAscByID().All(&totalStocks); err != nil {
+
+		return err
+	}
+
+	valueStocks := make([]models.ValueStock, len(totalStocks))
+
+	var reportAmountReceived uint
+	var reportTotal uint
+
+	for i, totalStock := range totalStocks {
+		// fmt.Print(strconv.Itoa(i) + "[i]: ")
+		// fmt.Println(totalStock)
+
+		incomeStocks := []models.IncomeStockRequest{}
+		if err = models.NewIncomeStockRequestQuerySet(mgr.db).SKUEq(totalStock.SKU).OrderAscByID().All(&incomeStocks); err != nil {
+
+			return err
+		}
+
+		for _, incomeStock := range incomeStocks {
+			// fmt.Print(strconv.Itoa(j) + "[j] : ")
+			// fmt.Println(incomeStock)
+
+			reportAmountReceived += incomeStock.AmountReceived
+			reportTotal += incomeStock.TotalPrice
+		}
+
+		valueStocks[i].StockItem = totalStock.StockItem
+		valueStocks[i].FinalStock = reportAmountReceived
+		valueStocks[i].AvgPurchases = reportTotal / reportAmountReceived
+		valueStocks[i].Total = valueStocks[i].FinalStock * valueStocks[i].AvgPurchases
+
+		valueReport.SKUCount++
+		valueReport.StockCount += reportAmountReceived
+		valueReport.TotalStockCount += valueStocks[i].Total
+	}
+
+	valueReport.ValueStock = valueStocks
+
+	fmt.Print("Value Report: ")
+	fmt.Println(valueReport)
 
 	return
 }
