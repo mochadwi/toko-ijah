@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -71,6 +72,30 @@ func RandomSKU() string {
 	r1 := rand.New(s1)
 
 	return strconv.Itoa(r1.Intn(99999999))
+}
+
+// RandomSKUByLength func
+func RandomSKUByLength(digits int) string {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
+	n := 9
+
+	for i := 1; i <= digits; i++ {
+
+		n *= 10
+		fmt.Printf("digits: %d", n)
+	}
+
+	// fmt.Printf("digits: %d", n)
+
+	return strconv.Itoa(r1.Intn(n))
+}
+
+// GenerateReceipt func 20171101-77541
+func GenerateReceipt(date string) string {
+
+	return date + "-" + RandomSKUByLength(5)
 }
 
 // GenerateSKU func

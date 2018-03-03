@@ -13,11 +13,18 @@ import (
 
 // Manager interface
 type Manager interface {
+	// Total Stock
 	AddTotalStock(totalStock *models.TotalStockRequest) error
 	ShowAllTotalStock(totalStock *[]models.TotalStockRequest) error
 	ShowTotalStock(id uint, totalStock *models.TotalStockRequest) error
 	UpdateTotalStockByID(id uint, newTotalStock *models.TotalStockRequest, currTotalStock *models.TotalStockRequest) (err error)
 	DeleteTotalStockByID(id uint) (err error)
+
+	// Income Stock
+	AddIncomeStock(incomeStock *models.IncomeStockRequest) error
+	ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) error
+	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
+	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
 }
 
 type manager struct {
@@ -38,7 +45,8 @@ func init() {
 	Mgr = &manager{db: db}
 
 	db.Debug().AutoMigrate(
-		&models.TotalStockRequest{})
+		&models.TotalStockRequest{},
+		&models.IncomeStockRequest{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -79,7 +87,7 @@ func (mgr *manager) ShowTotalStock(id uint, totalStock *models.TotalStockRequest
 
 func (mgr *manager) ShowAllTotalStock(totalStock *[]models.TotalStockRequest) (err error) {
 	if err := models.NewTotalStockRequestQuerySet(mgr.db).All(totalStock); err != nil {
-		fmt.Print("[error] showallnotifier: ")
+		fmt.Print("[error] showalltotalstock: ")
 		fmt.Println(err)
 		return err
 	}
@@ -102,16 +110,8 @@ func (mgr *manager) UpdateTotalStockByID(id uint, newTotalStock *models.TotalSto
 
 	if !cmp.Equal(currTotalStock, newTotalStock) {
 		// Update
-		// mgr.db.Update(&newTotalStock)
-
 		var oldStr = currTotalStock.SKU[13:len(currTotalStock.SKU)]
 		var newStr = newTotalStock.SKU[13:len(newTotalStock.SKU)]
-
-		// fmt.Println("temp sku completed: " + currTotalStock.SKU)
-		// fmt.Println("temp sku: " + currTotalStock.SKU[0:16])
-		// fmt.Println("temp sku: " + oldStr)
-		// fmt.Println("new sku completed: " + newTotalStock.SKU)
-		// fmt.Println("new sku: " + newStr)
 
 		currTotalStock = &models.TotalStockRequest{
 			StockItem: models.StockItem{
@@ -160,6 +160,83 @@ func (mgr *manager) DeleteTotalStockByID(id uint) (err error) {
 		fmt.Println(err)
 		return err
 	} // end Delete
+
+	return
+}
+
+func (mgr *manager) AddIncomeStock(incomeStock *models.IncomeStockRequest) (err error) {
+
+	// Create
+	incomeStock.Create(mgr.db)
+
+	if errs := mgr.db.GetErrors(); len(errs) > 0 {
+		err = errs[0]
+		fmt.Print("[error] addincomestock - create query: ")
+		fmt.Println(err)
+		return err
+	} // end Create
+
+	return
+}
+
+func (mgr *manager) ShowIncomeStock(id uint, incomeStock *models.IncomeStockRequest) (err error) {
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).IDEq(id).One(incomeStock); err != nil {
+		fmt.Print("[error] showincomestock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	// fmt.Print("[success] showincomestock: ")
+	// fmt.Println(err)
+	return
+}
+
+func (mgr *manager) ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) (err error) {
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).All(incomeStock); err != nil {
+		fmt.Print("[error] showallincomestock: ")
+		fmt.Println(err)
+		return err
+	}
+	return
+}
+
+func (mgr *manager) UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error) {
+
+	if err := models.NewIncomeStockRequestQuerySet(mgr.db).IDEq(id).One(currIncomeStock); err != nil {
+		fmt.Print("[error] showtotalstock: ")
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Print("[totalstock]: ")
+	fmt.Println(newIncomeStock)
+
+	fmt.Print("[temptotalstock]: ")
+	fmt.Println(currIncomeStock)
+
+	if !cmp.Equal(currIncomeStock, newIncomeStock) {
+		// Update
+		currIncomeStock = &models.IncomeStockRequest{
+			StockItem: models.StockItem{
+				ID: id},
+			AmountReceived: newIncomeStock.AmountReceived,
+			TotalPrice:     newIncomeStock.TotalPrice,
+			ReceiptNumber:  newIncomeStock.ReceiptNumber,
+			Note:           newIncomeStock.Note}
+
+		currIncomeStock.Update(mgr.db,
+			models.IncomeStockRequestDBSchema.AmountReceived,
+			models.IncomeStockRequestDBSchema.TotalPrice,
+			models.IncomeStockRequestDBSchema.ReceiptNumber,
+			models.IncomeStockRequestDBSchema.Note)
+
+		if errs := mgr.db.GetErrors(); len(errs) > 0 {
+			err = errs[0]
+			fmt.Print("[error] updatetotalstock - update query: ")
+			fmt.Println(err)
+			return err
+		} // end Update
+	}
 
 	return
 }
