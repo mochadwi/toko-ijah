@@ -26,6 +26,8 @@ type Manager interface {
 	ShowAllIncomeStock(incomeStock *[]models.IncomeStockRequest) error
 	UpdateIncomeStockByID(id uint, newIncomeStock *models.IncomeStockRequest, currIncomeStock *models.IncomeStockRequest) (err error)
 	DeleteIncomeStockByID(id uint) (err error)
+	GenerateValueReport(valueReport *models.ValueReport) (err error)
+	GenerateValueCSV(valueStocks *[]models.ValueStock) error
 
 	// Outcome Stock
 	AddOutcomeStock(incomeStock *models.OutcomeStockRequest) error
@@ -52,10 +54,13 @@ func init() {
 
 	Mgr = &manager{db: db}
 
+	// db.Model(&user).Related(&emails)
 	db.Debug().AutoMigrate(
 		&models.TotalStockRequest{},
 		&models.IncomeStockRequest{},
-		&models.OutcomeStockRequest{})
+		&models.OutcomeStockRequest{},
+		&models.ValueReport{},
+		&models.ValueStock{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -273,6 +278,79 @@ func (mgr *manager) DeleteIncomeStockByID(id uint) (err error) {
 		fmt.Println(err)
 		return err
 	} // end Delete
+
+	return
+}
+
+func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err error) {
+
+	totalStocks := []models.TotalStockRequest{}
+	if err = models.NewTotalStockRequestQuerySet(mgr.db).OrderAscByID().All(&totalStocks); err != nil {
+
+		return err
+	}
+
+	valueStocks := make([]models.ValueStock, len(totalStocks))
+
+	for i, totalStock := range totalStocks {
+		// fmt.Print(strconv.Itoa(i) + "[i]: ")
+		// fmt.Println(totalStock)
+
+		var reportAmountReceived = 0
+		var reportTotal = 0
+
+		incomeStocks := []models.IncomeStockRequest{}
+		if err = models.NewIncomeStockRequestQuerySet(mgr.db).SKUEq(totalStock.SKU).OrderAscByID().All(&incomeStocks); err != nil {
+
+			return err
+		}
+
+		for _, incomeStock := range incomeStocks {
+			// fmt.Print(strconv.Itoa(j) + "[j] : ")
+			// fmt.Println(incomeStock)
+
+			reportAmountReceived += int(incomeStock.AmountReceived)
+			reportTotal += int(incomeStock.TotalPrice)
+		}
+
+		if len(incomeStocks) > 0 {
+			fmt.Print(valueStocks[i].StockItem.SKU)
+			fmt.Println(": ")
+			fmt.Print("- Final Stock")
+			fmt.Println(reportAmountReceived)
+			fmt.Print("- Total Prices")
+			fmt.Println(reportTotal)
+
+			valueStocks[i].FinalStock = uint(reportAmountReceived)
+			valueStocks[i].AvgPurchases = uint(reportTotal / reportAmountReceived)
+			valueStocks[i].Total = valueStocks[i].FinalStock * valueStocks[i].AvgPurchases
+			valueStocks[i].StockItem = totalStock.StockItem
+
+			valueReport.SKUCount++
+			valueReport.StockCount += uint(reportAmountReceived)
+			valueReport.TotalStockCount += valueStocks[i].Total
+		}
+
+		valueStocks[i].Create(mgr.db)
+	}
+
+	valueReport.ValueStock = valueStocks
+
+	// Create
+	valueReport.Create(mgr.db)
+
+	// fmt.Print("Value Report: ")
+	// fmt.Println(valueReport)
+
+	return
+}
+
+func (mgr *manager) GenerateValueCSV(valueStocks *[]models.ValueStock) (err error) {
+
+	if err = models.NewValueStockQuerySet(mgr.db).All(valueStocks); err != nil {
+
+		return err
+	}
 
 	return
 }

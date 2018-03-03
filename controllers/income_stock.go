@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/csv"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -165,5 +168,82 @@ func DeleteIncomeStockByID(c *gin.Context) {
 		response.Data = nil
 
 		c.JSON(http.StatusAccepted, response)
+	}
+}
+
+// GenerateValueReport will delete the data by ID
+func GenerateValueReport(c *gin.Context) {
+	valueReport := models.ValueReport{}
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.GenerateValueReport(&valueReport); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+
+		response.Code = http.StatusAccepted
+		response.Message = http.StatusText(http.StatusAccepted)
+		response.Data = valueReport
+
+		c.JSON(http.StatusAccepted, response)
+	}
+}
+
+// GenerateValueCSV ...
+func GenerateValueCSV(c *gin.Context) {
+	valueStocks := []models.ValueStock{}
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	if err := utils.Mgr.GenerateValueCSV(&valueStocks); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+
+		b := &bytes.Buffer{}
+		w := csv.NewWriter(b)
+
+		w.Write([]string{
+			"SKU",
+			"Name",
+			"Quantity",
+			"Average Purchases",
+			"Total",
+		})
+
+		for _, valueStock := range valueStocks {
+			w.Write([]string{
+				valueStock.SKU,
+				valueStock.Name,
+				utils.UintToStr(valueStock.FinalStock),
+				utils.UintToStr(valueStock.AvgPurchases),
+				utils.UintToStr(valueStock.Total)})
+		}
+		w.Flush()
+
+		if err := w.Error(); err != nil {
+			log.Fatal(err)
+		}
+
+		response.Code = http.StatusOK
+		response.Message = http.StatusText(http.StatusOK)
+		response.Data = valueStocks
+
+		date := time.Now().Local()
+
+		c.Header("Content-Description", "File Transfer")
+		c.Header("Content-Disposition", "attachment; filename="+date.Format("2006-01-02")+"_value_stocks.csv")
+		c.Data(http.StatusOK, "text/csv", b.Bytes())
 	}
 }
