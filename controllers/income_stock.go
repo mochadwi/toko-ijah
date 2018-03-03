@@ -227,8 +227,8 @@ func GenerateValueCSV(c *gin.Context) {
 				valueStock.SKU,
 				valueStock.Name,
 				utils.UintToStr(valueStock.FinalStock),
-				utils.UintToStr(valueStock.AvgPurchases),
-				utils.UintToStr(valueStock.Total)})
+				utils.PrettifyPrice("IDR", valueStock.AvgPurchases),
+				utils.PrettifyPrice("IDR", valueStock.Total)})
 		}
 		w.Flush()
 

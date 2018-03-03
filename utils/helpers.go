@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	money "github.com/Rhymond/go-money"
 )
 
 // StrToInt64 func
@@ -114,4 +116,10 @@ func GenerateSKU(size string, colour string) string {
 func PrettifyName(name string, size string, colour string) string {
 
 	return name + " (" + size + ", " + colour + ")"
+}
+
+// PrettifyPrice ...
+func PrettifyPrice(locale string, oldPrice uint) string {
+
+	return money.New(int64(oldPrice), locale).Display()
 }
