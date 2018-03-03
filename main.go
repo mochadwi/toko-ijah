@@ -31,6 +31,13 @@ func main() {
 		v1.GET("/income/stock", controllers.GetAllIncomeStock)
 		v1.PUT("/income/stock/:id", controllers.UpdateIncomeStockByID)
 		v1.DELETE("/income/stock/:id", controllers.DeleteIncomeStockByID)
+
+		// Adds outcome stock
+		v1.POST("/outcome/stock", controllers.AddOutcomeStock)
+		v1.GET("/outcome/stock/:id", controllers.GetOutcomeStock)
+		v1.GET("/outcome/stock", controllers.GetAllOutcomeStock)
+		v1.PUT("/outcome/stock/:id", controllers.UpdateOutcomeStockByID)
+		v1.DELETE("/outcome/stock/:id", controllers.DeleteOutcomeStockByID)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {
