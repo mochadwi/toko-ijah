@@ -1,16 +1,46 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	money "github.com/Rhymond/go-money"
 )
 
-// StrToInt func
-func StrToInt(word string) int64 {
+// StrToInt64 func
+func StrToInt64(word string) int64 {
 
 	num, _ := strconv.ParseInt(word, 0, 64)
+	return num
+}
+
+// StrToInt func
+func StrToInt(word string) int {
+
+	num, _ := strconv.Atoi(word)
+	return num
+}
+
+// StrToUint func
+func StrToUint(word string) uint {
+
+	num, _ := strconv.Atoi(word)
+	return uint(num)
+}
+
+// UintToStr func
+func UintToStr(num uint) string {
+
+	return strconv.Itoa(int(num))
+}
+
+// StrToUint64 func
+func StrToUint64(word string) uint64 {
+
+	num, _ := strconv.ParseUint(word, 0, 64)
 	return num
 }
 
@@ -52,6 +82,30 @@ func RandomSKU() string {
 	return strconv.Itoa(r1.Intn(99999999))
 }
 
+// RandomSKUByLength func
+func RandomSKUByLength(digits int) string {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
+	n := 9
+
+	for i := 1; i <= digits; i++ {
+
+		n *= 10
+		fmt.Printf("digits: %d", n)
+	}
+
+	// fmt.Printf("digits: %d", n)
+
+	return strconv.Itoa(r1.Intn(n))
+}
+
+// GenerateReceipt func 20171101-77541
+func GenerateReceipt(date string) string {
+
+	return date + "-" + RandomSKUByLength(5)
+}
+
 // GenerateSKU func
 func GenerateSKU(size string, colour string) string {
 
@@ -62,4 +116,10 @@ func GenerateSKU(size string, colour string) string {
 func PrettifyName(name string, size string, colour string) string {
 
 	return name + " (" + size + ", " + colour + ")"
+}
+
+// PrettifyPrice ...
+func PrettifyPrice(locale string, oldPrice uint) string {
+
+	return money.New(int64(oldPrice), locale).Display()
 }
