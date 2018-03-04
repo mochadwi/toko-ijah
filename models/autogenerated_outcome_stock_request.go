@@ -739,6 +739,14 @@ func (qs OutcomeStockRequestQuerySet) UpdatedAtNe(updatedAt time.Time) OutcomeSt
 	return qs.w(qs.db.Where("updated_at != ?", updatedAt))
 }
 
+// JoinClause
+func (qs OutcomeStockRequestQuerySet) JoinClause(fromDate string, toDate string) OutcomeStockRequestQuerySet {
+	return qs.w(qs.db.
+		Select("outcome_stock_requests.sku, outcome_stock_requests.name, outcome_stock_requests.amount_delivered, outcome_stock_requests.sell_price, outcome_stock_requests.total_price, income_stock_requests.purchase_price, outcome_stock_requests.total_price - (income_stock_requests.purchase_price * outcome_stock_requests.amount_delivered) as profit").
+		Joins("INNER JOIN income_stock_requests ON outcome_stock_requests.sku = income_stock_requests.sku").
+		Where("outcome_stock_requests.time BETWEEN ? AND ?", fromDate, toDate))
+}
+
 // ===== END of query set OutcomeStockRequestQuerySet
 
 // ===== BEGIN of OutcomeStockRequest modifiers

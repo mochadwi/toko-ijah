@@ -9,6 +9,7 @@ import "time"
 type OutcomeStockRequest struct {
 	Time time.Time `json:"time"`
 	StockItem
+	OrderID         string `json:"orderId"`
 	AmountDelivered uint   `json:"amountDelivered"`
 	SellPrice       uint   `json:"sellPrice"`
 	TotalPrice      uint   `json:"totalPrice"`

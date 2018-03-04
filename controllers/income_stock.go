@@ -171,7 +171,7 @@ func DeleteIncomeStockByID(c *gin.Context) {
 	}
 }
 
-// GenerateValueReport will delete the data by ID
+// GenerateValueReport ...
 func GenerateValueReport(c *gin.Context) {
 	valueReport := models.ValueReport{}
 
@@ -223,12 +223,14 @@ func GenerateValueCSV(c *gin.Context) {
 		})
 
 		for _, valueStock := range valueStocks {
-			w.Write([]string{
-				valueStock.SKU,
-				valueStock.Name,
-				utils.UintToStr(valueStock.FinalStock),
-				utils.PrettifyPrice("IDR", valueStock.AvgPurchases),
-				utils.PrettifyPrice("IDR", valueStock.Total)})
+			if len(valueStock.SKU) > 0 {
+				w.Write([]string{
+					valueStock.SKU,
+					valueStock.Name,
+					utils.UintToStr(valueStock.FinalStock),
+					utils.PrettifyPrice("IDR", valueStock.AvgPurchases),
+					utils.PrettifyPrice("IDR", valueStock.Total)})
+			}
 		}
 		w.Flush()
 

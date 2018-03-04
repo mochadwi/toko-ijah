@@ -664,8 +664,8 @@ var ValueStockDBSchema = struct {
 	UpdatedAt    valueStockDBSchemaField
 	DeletedAt    valueStockDBSchemaField
 	FinalStock   valueStockDBSchemaField
-	Total        valueStockDBSchemaField
 	AvgPurchases valueStockDBSchemaField
+	Total        valueStockDBSchemaField
 }{
 
 	ID:           valueStockDBSchemaField("id"),
@@ -675,8 +675,8 @@ var ValueStockDBSchema = struct {
 	UpdatedAt:    valueStockDBSchemaField("updated_at"),
 	DeletedAt:    valueStockDBSchemaField("deleted_at"),
 	FinalStock:   valueStockDBSchemaField("final_stock"),
-	Total:        valueStockDBSchemaField("total"),
 	AvgPurchases: valueStockDBSchemaField("avg_purchases"),
+	Total:        valueStockDBSchemaField("total"),
 }
 
 // Update updates ValueStock fields by primary key
@@ -689,8 +689,8 @@ func (o *ValueStock) Update(db *gorm.DB, fields ...valueStockDBSchemaField) erro
 		"updated_at":    o.UpdatedAt,
 		"deleted_at":    o.DeletedAt,
 		"final_stock":   o.FinalStock,
-		"total":         o.Total,
 		"avg_purchases": o.AvgPurchases,
+		"total":         o.Total,
 	}
 	u := map[string]interface{}{}
 	for _, f := range fields {

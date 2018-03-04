@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/jinzhu/gorm"
@@ -35,10 +36,13 @@ type Manager interface {
 	ShowAllOutcomeStock(incomeStock *[]models.OutcomeStockRequest) error
 	UpdateOutcomeStockByID(id uint, newOutcomeStock *models.OutcomeStockRequest, currOutcomeStock *models.OutcomeStockRequest) (err error)
 	DeleteOutcomeStockByID(id uint) (err error)
+	GenerateSaleReport(fromDate string, toDate string, saleReport *models.SaleReport) (err error)
+	GenerateSaleCSV(saleStocks *[]models.SaleStock) error
 }
 
 type manager struct {
-	db *gorm.DB
+	db            *gorm.DB
+	isIniatilized bool
 }
 
 // Mgr to manage database
@@ -52,7 +56,7 @@ func init() {
 	db.LogMode(true)
 	// defer db.Close()
 
-	Mgr = &manager{db: db}
+	Mgr = &manager{db: db, isIniatilized: true}
 
 	// db.Model(&user).Related(&emails)
 	db.Debug().AutoMigrate(
@@ -60,7 +64,9 @@ func init() {
 		&models.IncomeStockRequest{},
 		&models.OutcomeStockRequest{},
 		&models.ValueReport{},
-		&models.ValueStock{})
+		&models.ValueStock{},
+		&models.SaleReport{},
+		&models.SaleStock{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -329,9 +335,9 @@ func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err er
 			valueReport.SKUCount++
 			valueReport.StockCount += uint(reportAmountReceived)
 			valueReport.TotalStockCount += valueStocks[i].Total
-		}
 
-		valueStocks[i].Create(mgr.db)
+			valueStocks[i].Create(mgr.db)
+		}
 	}
 
 	valueReport.ValueStock = valueStocks
@@ -455,6 +461,78 @@ func (mgr *manager) DeleteOutcomeStockByID(id uint) (err error) {
 		fmt.Println(err)
 		return err
 	} // end Delete
+
+	return
+}
+
+func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleReport *models.SaleReport) (err error) {
+
+	if mgr.isIniatilized {
+		// mgr.db.Begin()
+
+		// var sku string
+		err := mgr.db.
+			// rows, err := mgr.db.
+			Table("outcome_stock_requests").
+			Select("outcome_stock_requests.note, outcome_stock_requests.\"time\", outcome_stock_requests.sku, outcome_stock_requests.name, outcome_stock_requests.amount_delivered, outcome_stock_requests.sell_price, outcome_stock_requests.total_price, income_stock_requests.purchase_price, outcome_stock_requests.total_price - (income_stock_requests.purchase_price * outcome_stock_requests.amount_delivered) AS profit").
+			Joins("INNER JOIN income_stock_requests ON outcome_stock_requests.sku = income_stock_requests.sku").
+			Where("outcome_stock_requests.time BETWEEN  \"" + fromDate + "\" AND  \"" + toDate + "\"").
+			Find(&saleReport.SaleStock).Error
+		// Rows()
+
+		if err != nil {
+			return err
+		}
+
+		for _, sale := range saleReport.SaleStock {
+			if sale.OrderID != "" {
+				saleReport.TotalSale++
+			}
+			saleReport.TotalRevenue += sale.TotalPrice
+			saleReport.TotalProfit += sale.Profit
+			saleReport.TotalStock += sale.AmountDelivered
+
+			sale.Create(mgr.db)
+		}
+
+		// dateString := "2016-09-01"
+		//convert string to time.Time type
+		layOut := "2006-01-02" // yyyy-dd-MM
+		// dateStamp, err := time.Parse(layOut, dateString)
+
+		// // we want same format as the dateString
+		// // but time.Parse function provides extra information such as time zone, minutes
+		// // that we don't need.
+
+		// fmt.Printf("Output(local date) : %s\n", dateStamp.Local())
+		// fmt.Printf("Output(UTC) : %s\n", dateStamp)
+
+		// // additional step to format to dd-MMM-yyyy
+		// convertedDateString := dateStamp.Format("2-Jan-2006")
+		// fmt.Printf("Output : %s\n", convertedDateString)
+
+		// // or if you prefer the full month name
+		// fmt.Printf("Full output : %s\n", dateStamp.Format("2-January-2006"))
+		saleReport.FromDate, err = time.Parse(layOut, fromDate)
+		saleReport.ToDate, err = time.Parse(layOut, toDate)
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		saleReport.Create(mgr.db)
+	}
+
+	return
+}
+
+func (mgr *manager) GenerateSaleCSV(saleStocks *[]models.SaleStock) (err error) {
+
+	if err = models.NewSaleStockQuerySet(mgr.db).All(saleStocks); err != nil {
+
+		return err
+	}
 
 	return
 }
