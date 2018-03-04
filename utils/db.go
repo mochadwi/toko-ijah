@@ -35,10 +35,13 @@ type Manager interface {
 	ShowAllOutcomeStock(incomeStock *[]models.OutcomeStockRequest) error
 	UpdateOutcomeStockByID(id uint, newOutcomeStock *models.OutcomeStockRequest, currOutcomeStock *models.OutcomeStockRequest) (err error)
 	DeleteOutcomeStockByID(id uint) (err error)
+	GenerateSaleReport(fromDate string, toDate string, saleReport *models.SaleReport) (err error)
+	// GenerateSaleCSV(saleStocks *[]models.SaleStock) error
 }
 
 type manager struct {
-	db *gorm.DB
+	db            *gorm.DB
+	isIniatilized bool
 }
 
 // Mgr to manage database
@@ -52,7 +55,7 @@ func init() {
 	db.LogMode(true)
 	// defer db.Close()
 
-	Mgr = &manager{db: db}
+	Mgr = &manager{db: db, isIniatilized: true}
 
 	// db.Model(&user).Related(&emails)
 	db.Debug().AutoMigrate(
@@ -60,7 +63,9 @@ func init() {
 		&models.IncomeStockRequest{},
 		&models.OutcomeStockRequest{},
 		&models.ValueReport{},
-		&models.ValueStock{})
+		&models.ValueStock{},
+		&models.SaleReport{},
+		&models.SaleStock{})
 }
 
 func (mgr *manager) AddTotalStock(totalStock *models.TotalStockRequest) (err error) {
@@ -455,6 +460,29 @@ func (mgr *manager) DeleteOutcomeStockByID(id uint) (err error) {
 		fmt.Println(err)
 		return err
 	} // end Delete
+
+	return
+}
+
+func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleReport *models.SaleReport) (err error) {
+
+	if mgr.isIniatilized {
+		mgr.db.Begin()
+
+		// var sku string
+		err := mgr.db.
+			// rows, err := mgr.db.
+			Table("outcome_stock_requests").
+			Select("outcome_stock_requests.note, outcome_stock_requests.\"time\", outcome_stock_requests.sku, outcome_stock_requests.name, outcome_stock_requests.amount_delivered, outcome_stock_requests.sell_price, outcome_stock_requests.total_price, income_stock_requests.purchase_price, outcome_stock_requests.total_price - (income_stock_requests.purchase_price * outcome_stock_requests.amount_delivered) AS profit").
+			Joins("INNER JOIN income_stock_requests ON outcome_stock_requests.sku = income_stock_requests.sku").
+			Where("outcome_stock_requests.time BETWEEN \"" + fromDate + "\" AND \"" + toDate + "\"").
+			Find(&saleReport).Error
+		// Rows()
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return
 }

@@ -168,3 +168,83 @@ func DeleteOutcomeStockByID(c *gin.Context) {
 		c.JSON(http.StatusAccepted, response)
 	}
 }
+
+// GenerateSaleReport ...
+func GenerateSaleReport(c *gin.Context) {
+	saleReport := models.SaleReport{}
+
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
+
+	fromDate := "2018-03-04 09:38:44.849835114+07:00"
+	toDate := "2018-03-14 09:38:44.849835114+07:00"
+
+	if err := utils.Mgr.GenerateSaleReport(fromDate, toDate, &saleReport); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
+
+		c.JSON(http.StatusNotFound, response)
+	} else {
+
+		response.Code = http.StatusAccepted
+		response.Message = http.StatusText(http.StatusAccepted)
+		response.Data = saleReport
+
+		c.JSON(http.StatusAccepted, response)
+	}
+}
+
+// // GenerateSaleCSV ...
+// func GenerateSaleCSV(c *gin.Context) {
+// 	valueStocks := []models.SaleStock{}
+
+// 	var response = &index.DefaultResponseFormat{
+// 		RequestID: uuid.NewV4().String(),
+// 		Now:       time.Now().Unix(),
+// 	}
+
+// 	if err := utils.Mgr.GenerateSaleCSV(&valueStocks); err != nil {
+// 		response.Code = http.StatusNotFound
+// 		response.Message = err.Error()
+
+// 		c.JSON(http.StatusNotFound, response)
+// 	} else {
+
+// 		b := &bytes.Buffer{}
+// 		w := csv.NewWriter(b)
+
+// 		w.Write([]string{
+// 			"SKU",
+// 			"Name",
+// 			"Quantity",
+// 			"Average Purchases",
+// 			"Total",
+// 		})
+
+// 		for _, valueStock := range valueStocks {
+// 			w.Write([]string{
+// 				valueStock.SKU,
+// 				valueStock.Name,
+// 				utils.UintToStr(valueStock.FinalStock),
+// 				utils.PrettifyPrice("IDR", valueStock.AvgPurchases),
+// 				utils.PrettifyPrice("IDR", valueStock.Total)})
+// 		}
+// 		w.Flush()
+
+// 		if err := w.Error(); err != nil {
+// 			log.Fatal(err)
+// 		}
+
+// 		response.Code = http.StatusOK
+// 		response.Message = http.StatusText(http.StatusOK)
+// 		response.Data = valueStocks
+
+// 		date := time.Now().Local()
+
+// 		c.Header("Content-Description", "File Transfer")
+// 		c.Header("Content-Disposition", "attachment; filename="+date.Format("2006-01-02")+"_value_stocks.csv")
+// 		c.Data(http.StatusOK, "text/csv", b.Bytes())
+// 	}
+// }
