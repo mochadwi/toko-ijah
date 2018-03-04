@@ -6,19 +6,9 @@ Inventory API inspired by
 - Dep
 
 # Setup
-- Clone this repository `go get github.com/mochadwi/toko-ijah`
-- `cd $GO_HOME/src/mochadwi/toko-ijah`
+- Clone this repository
 - Run `dep ensure`
-- Run `gin -a 7575 run main.go` or `./gin-bin`
 - Happy coding
-
-# Install using script
-- Run `chmod a+x install.sh`
-- Just run `./install.sh` to do the above commands
-
-
-# Postman Documentation (API Docs)
-- Available [here](https://documenter.getpostman.com/view/1033160/toko-ijah/RVnQn2ij)
 
 # LICENSE
 
