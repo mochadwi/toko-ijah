@@ -467,7 +467,7 @@ func (mgr *manager) DeleteOutcomeStockByID(id uint) (err error) {
 func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleReport *models.SaleReport) (err error) {
 
 	if mgr.isIniatilized {
-		mgr.db.Begin()
+		// mgr.db.Begin()
 
 		// var sku string
 		err := mgr.db.
@@ -476,12 +476,16 @@ func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleRepor
 			Select("outcome_stock_requests.note, outcome_stock_requests.\"time\", outcome_stock_requests.sku, outcome_stock_requests.name, outcome_stock_requests.amount_delivered, outcome_stock_requests.sell_price, outcome_stock_requests.total_price, income_stock_requests.purchase_price, outcome_stock_requests.total_price - (income_stock_requests.purchase_price * outcome_stock_requests.amount_delivered) AS profit").
 			Joins("INNER JOIN income_stock_requests ON outcome_stock_requests.sku = income_stock_requests.sku").
 			Where("outcome_stock_requests.time BETWEEN \"" + fromDate + "\" AND \"" + toDate + "\"").
-			Find(&saleReport).Error
+			Find(&saleReport.SaleStock).Error
 		// Rows()
 
 		if err != nil {
 			return err
 		}
+
+		// for _, sale := range saleReport.SaleStock {
+		fmt.Println(saleReport)
+		// }
 	}
 
 	return
