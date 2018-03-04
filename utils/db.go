@@ -335,9 +335,9 @@ func (mgr *manager) GenerateValueReport(valueReport *models.ValueReport) (err er
 			valueReport.SKUCount++
 			valueReport.StockCount += uint(reportAmountReceived)
 			valueReport.TotalStockCount += valueStocks[i].Total
-		}
 
-		valueStocks[i].Create(mgr.db)
+			valueStocks[i].Create(mgr.db)
+		}
 	}
 
 	valueReport.ValueStock = valueStocks
