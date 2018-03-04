@@ -37,7 +37,7 @@ type Manager interface {
 	UpdateOutcomeStockByID(id uint, newOutcomeStock *models.OutcomeStockRequest, currOutcomeStock *models.OutcomeStockRequest) (err error)
 	DeleteOutcomeStockByID(id uint) (err error)
 	GenerateSaleReport(fromDate string, toDate string, saleReport *models.SaleReport) (err error)
-	// GenerateSaleCSV(saleStocks *[]models.SaleStock) error
+	GenerateSaleCSV(saleStocks *[]models.SaleStock) error
 }
 
 type manager struct {
@@ -491,6 +491,8 @@ func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleRepor
 			saleReport.TotalRevenue += sale.TotalPrice
 			saleReport.TotalProfit += sale.Profit
 			saleReport.TotalStock += sale.AmountDelivered
+
+			sale.Create(mgr.db)
 		}
 
 		// dateString := "2016-09-01"
@@ -518,6 +520,18 @@ func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleRepor
 			fmt.Println(err)
 			return err
 		}
+
+		saleReport.Create(mgr.db)
+	}
+
+	return
+}
+
+func (mgr *manager) GenerateSaleCSV(saleStocks *[]models.SaleStock) (err error) {
+
+	if err = models.NewSaleStockQuerySet(mgr.db).All(saleStocks); err != nil {
+
+		return err
 	}
 
 	return

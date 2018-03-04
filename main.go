@@ -45,6 +45,7 @@ func main() {
 
 		// Generate sale report
 		v1.GET("/sale/report", controllers.GenerateSaleReport)
+		v1.GET("/sale/csv", controllers.GenerateSaleCSV)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

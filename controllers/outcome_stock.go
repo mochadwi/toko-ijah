@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/csv"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -198,55 +201,62 @@ func GenerateSaleReport(c *gin.Context) {
 	}
 }
 
-// // GenerateSaleCSV ...
-// func GenerateSaleCSV(c *gin.Context) {
-// 	valueStocks := []models.SaleStock{}
+// GenerateSaleCSV ...
+func GenerateSaleCSV(c *gin.Context) {
+	saleStocks := []models.SaleStock{}
 
-// 	var response = &index.DefaultResponseFormat{
-// 		RequestID: uuid.NewV4().String(),
-// 		Now:       time.Now().Unix(),
-// 	}
+	var response = &index.DefaultResponseFormat{
+		RequestID: uuid.NewV4().String(),
+		Now:       time.Now().Unix(),
+	}
 
-// 	if err := utils.Mgr.GenerateSaleCSV(&valueStocks); err != nil {
-// 		response.Code = http.StatusNotFound
-// 		response.Message = err.Error()
+	if err := utils.Mgr.GenerateSaleCSV(&saleStocks); err != nil {
+		response.Code = http.StatusNotFound
+		response.Message = err.Error()
 
-// 		c.JSON(http.StatusNotFound, response)
-// 	} else {
+		c.JSON(http.StatusNotFound, response)
+	} else {
 
-// 		b := &bytes.Buffer{}
-// 		w := csv.NewWriter(b)
+		b := &bytes.Buffer{}
+		w := csv.NewWriter(b)
 
-// 		w.Write([]string{
-// 			"SKU",
-// 			"Name",
-// 			"Quantity",
-// 			"Average Purchases",
-// 			"Total",
-// 		})
+		w.Write([]string{
+			"Order ID",
+			"Time",
+			"SKU",
+			"Name",
+			"Quantity",
+			"Sell Price",
+			"Total",
+			"Purchase Price",
+			"Profit"})
 
-// 		for _, valueStock := range valueStocks {
-// 			w.Write([]string{
-// 				valueStock.SKU,
-// 				valueStock.Name,
-// 				utils.UintToStr(valueStock.FinalStock),
-// 				utils.PrettifyPrice("IDR", valueStock.AvgPurchases),
-// 				utils.PrettifyPrice("IDR", valueStock.Total)})
-// 		}
-// 		w.Flush()
+		for _, saleStock := range saleStocks {
+			w.Write([]string{
+				saleStock.OrderID,
+				saleStock.Time.Format("2006-01-02 00:00:00"),
+				saleStock.SKU,
+				saleStock.Name,
+				utils.UintToStr(saleStock.AmountDelivered),
+				utils.PrettifyPrice("IDR", saleStock.SellPrice),
+				utils.PrettifyPrice("IDR", saleStock.TotalPrice),
+				utils.PrettifyPrice("IDR", saleStock.PurchasePrice),
+				utils.PrettifyPrice("IDR", saleStock.Profit)})
+		}
+		w.Flush()
 
-// 		if err := w.Error(); err != nil {
-// 			log.Fatal(err)
-// 		}
+		if err := w.Error(); err != nil {
+			log.Fatal(err)
+		}
 
-// 		response.Code = http.StatusOK
-// 		response.Message = http.StatusText(http.StatusOK)
-// 		response.Data = valueStocks
+		response.Code = http.StatusOK
+		response.Message = http.StatusText(http.StatusOK)
+		response.Data = saleStocks
 
-// 		date := time.Now().Local()
+		date := time.Now().Local()
 
-// 		c.Header("Content-Description", "File Transfer")
-// 		c.Header("Content-Disposition", "attachment; filename="+date.Format("2006-01-02")+"_value_stocks.csv")
-// 		c.Data(http.StatusOK, "text/csv", b.Bytes())
-// 	}
-// }
+		c.Header("Content-Description", "File Transfer")
+		c.Header("Content-Disposition", "attachment; filename="+date.Format("2006-01-02")+"_sale_stocks.csv")
+		c.Data(http.StatusOK, "text/csv", b.Bytes())
+	}
+}
