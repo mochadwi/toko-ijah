@@ -178,8 +178,10 @@ func GenerateSaleReport(c *gin.Context) {
 		Now:       time.Now().Unix(),
 	}
 
-	fromDate := "2018-03-04 09:38:44.849835114+07:00"
-	toDate := "2018-03-14 09:38:44.849835114+07:00"
+	fromDate := c.DefaultQuery("fromDate", time.Now().Format(time.RFC850))
+	toDate := c.Query("toDate")
+
+	fmt.Println("fromDate - toDate: " + fromDate + " - " + toDate)
 
 	if err := utils.Mgr.GenerateSaleReport(fromDate, toDate, &saleReport); err != nil {
 		response.Code = http.StatusNotFound

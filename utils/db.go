@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/jinzhu/gorm"
@@ -475,7 +476,7 @@ func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleRepor
 			Table("outcome_stock_requests").
 			Select("outcome_stock_requests.note, outcome_stock_requests.\"time\", outcome_stock_requests.sku, outcome_stock_requests.name, outcome_stock_requests.amount_delivered, outcome_stock_requests.sell_price, outcome_stock_requests.total_price, income_stock_requests.purchase_price, outcome_stock_requests.total_price - (income_stock_requests.purchase_price * outcome_stock_requests.amount_delivered) AS profit").
 			Joins("INNER JOIN income_stock_requests ON outcome_stock_requests.sku = income_stock_requests.sku").
-			Where("outcome_stock_requests.time BETWEEN \"" + fromDate + "\" AND \"" + toDate + "\"").
+			Where("outcome_stock_requests.time BETWEEN  \"" + fromDate + "\" AND  \"" + toDate + "\"").
 			Find(&saleReport.SaleStock).Error
 		// Rows()
 
@@ -483,9 +484,40 @@ func (mgr *manager) GenerateSaleReport(fromDate string, toDate string, saleRepor
 			return err
 		}
 
-		// for _, sale := range saleReport.SaleStock {
-		fmt.Println(saleReport)
-		// }
+		for _, sale := range saleReport.SaleStock {
+			if sale.OrderID != "" {
+				saleReport.TotalSale++
+			}
+			saleReport.TotalRevenue += sale.TotalPrice
+			saleReport.TotalProfit += sale.Profit
+			saleReport.TotalStock += sale.AmountDelivered
+		}
+
+		// dateString := "2016-09-01"
+		//convert string to time.Time type
+		layOut := "2006-01-02" // yyyy-dd-MM
+		// dateStamp, err := time.Parse(layOut, dateString)
+
+		// // we want same format as the dateString
+		// // but time.Parse function provides extra information such as time zone, minutes
+		// // that we don't need.
+
+		// fmt.Printf("Output(local date) : %s\n", dateStamp.Local())
+		// fmt.Printf("Output(UTC) : %s\n", dateStamp)
+
+		// // additional step to format to dd-MMM-yyyy
+		// convertedDateString := dateStamp.Format("2-Jan-2006")
+		// fmt.Printf("Output : %s\n", convertedDateString)
+
+		// // or if you prefer the full month name
+		// fmt.Printf("Full output : %s\n", dateStamp.Format("2-January-2006"))
+		saleReport.FromDate, err = time.Parse(layOut, fromDate)
+		saleReport.ToDate, err = time.Parse(layOut, toDate)
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
 	}
 
 	return
